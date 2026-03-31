@@ -1,17 +1,23 @@
 using LibrarySystem.Domain.Common;
 using LibrarySystem.Domain.Enums;
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace LibrarySystem.Domain.Entities
 {
     public class Property : BaseEntity
     {
-        public string Label { get; set; } // e.g., Title
-        public string Description { get; set; }
-        public PropertyDataType DataType { get; set; }
+        [Required]
+        [StringLength(100)]
+        public string Label { get; set; } = string.Empty;
+
+        [StringLength(500)]
+        public string? Description { get; set; } // "?" means it CAN be NULL in the DB
+
+        public PropertyDataType DataType { get; set; } // Enums are value types, not nullable by default
 
         public int VocabularyId { get; set; }
-        public Vocabulary Vocabulary { get; set; }
-
-        public ICollection<TemplateProperty> TemplateProperties { get; set; } = new List<TemplateProperty>();
+        [ForeignKey("VocabularyId")]
+        public virtual Vocabulary? Vocabulary { get; set; } // Optional navigation
     }
 }

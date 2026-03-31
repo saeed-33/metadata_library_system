@@ -1,12 +1,17 @@
 using LibrarySystem.Domain.Common;
+using System.ComponentModel.DataAnnotations;
 
 namespace LibrarySystem.Domain.Entities
 {
     public class ItemSet : BaseEntity
     {
-        public string Name { get; set; }
-        public string Description { get; set; }
+        [Required]
+        [StringLength(100)]
+        public string Name { get; set; } = string.Empty;
 
-        public ICollection<ItemSetMember> ItemSetMembers { get; set; } = new List<ItemSetMember>();
+        [StringLength(500)]
+        public string? Description { get; set; }
+
+        public virtual ICollection<ItemSetMember> ItemSetMembers { get; set; } = new List<ItemSetMember>();
     }
 }

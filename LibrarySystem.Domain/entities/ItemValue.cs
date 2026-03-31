@@ -1,20 +1,29 @@
 using LibrarySystem.Domain.Common;
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace LibrarySystem.Domain.Entities
 {
     public class ItemValue : BaseEntity
     {
         public int ItemId { get; set; }
-        public Item Item { get; set; }
+        [ForeignKey("ItemId")]
+        public virtual Item? Item { get; set; }
 
         public int PropertyId { get; set; }
-        public Property Property { get; set; }
+        [ForeignKey("PropertyId")]
+        public virtual Property? Property { get; set; }
 
-        public string Value { get; set; } // The actual data
-        public string LanguageCode { get; set; } // e.g., "ar", "en"
+        [Required]
+        public string Value { get; set; } = string.Empty;
 
-        // For internal linking to another Item
-        public int? LinkedItemId { get; set; }
-        public Item LinkedItem { get; set; }
+        [Required]
+        [StringLength(10)]
+        public string LanguageCode { get; set; } = "en"; // Default value
+
+        // Requirement 3-6: Internal Linking is OPTIONAL
+        public int? LinkedItemId { get; set; } // "?" is required here!
+        [ForeignKey("LinkedItemId")]
+        public virtual Item? LinkedItem { get; set; }
     }
 }

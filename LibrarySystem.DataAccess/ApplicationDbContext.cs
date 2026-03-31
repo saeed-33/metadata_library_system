@@ -24,20 +24,27 @@ namespace LibrarySystem.DataAccess // Updated Namespace
         {
             base.OnModelCreating(modelBuilder);
 
-            // Composite Key for TemplateProperty
+            // 1. Composite Key for TemplateProperty
             modelBuilder.Entity<TemplateProperty>()
                 .HasKey(tp => new { tp.TemplateId, tp.PropertyId });
 
-            // Composite Key for ItemSetMember
+            // 2. Composite Key for ItemSetMember
             modelBuilder.Entity<ItemSetMember>()
                 .HasKey(ism => new { ism.ItemId, ism.ItemSetId });
 
-            // Self-Referencing for Internal Linking (Requirement 3-6)
+            // 3. FIX: Explicitly define the main relationship for ItemValues
             modelBuilder.Entity<ItemValue>()
-                .HasOne(iv => iv.LinkedItem)
-                .WithMany()
+                .HasOne(iv => iv.Item)             // ItemValue has one parent Item
+                .WithMany(i => i.ItemValues)      // Item has many ItemValues
+                .HasForeignKey(iv => iv.ItemId)   // Using ItemId as the key
+                .OnDelete(DeleteBehavior.Cascade); // If Item is deleted, delete its values
+
+            // 4. FIX: Explicitly define the Internal Linking relationship
+            modelBuilder.Entity<ItemValue>()
+                .HasOne(iv => iv.LinkedItem)      // ItemValue can have one LinkedItem
+                .WithMany()                       // LinkedItem does NOT need a collection of values pointing to it
                 .HasForeignKey(iv => iv.LinkedItemId)
-                .OnDelete(DeleteBehavior.Restrict);
+                .OnDelete(DeleteBehavior.Restrict); // Do NOT delete the linked item if the value is deleted
         }
     }
 }

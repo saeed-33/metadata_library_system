@@ -1,13 +1,23 @@
 using LibrarySystem.Domain.Common;
+using System.ComponentModel.DataAnnotations;
 
 namespace LibrarySystem.Domain.Entities
 {
     public class Vocabulary : BaseEntity
     {
-        public string Name { get; set; } // e.g., Dublin Core
-        public string Prefix { get; set; } // e.g., dc
-        public string NamespaceUri { get; set; }
+        [Required]
+        [StringLength(100)]
+        public string Name { get; set; } = string.Empty; // Required
 
-        public ICollection<Property> Properties { get; set; } = new List<Property>();
+        [Required]
+        [StringLength(20)]
+        public string Prefix { get; set; } = string.Empty; // Required
+
+        [Required]
+        [StringLength(255)]
+        public string NamespaceUri { get; set; } = string.Empty; // Required
+
+        // Navigation property: Can be null if not "Included" in the query
+        public virtual ICollection<Property>? Properties { get; set; }
     }
 }

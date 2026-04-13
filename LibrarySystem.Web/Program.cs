@@ -1,8 +1,14 @@
 using Microsoft.EntityFrameworkCore;
-using LibrarySystem.DataAccess;
+using LibrarySystem.DataAccess.Persistence.Contexts;
 using Serilog;
+using LibrarySystem.DataAccess.Persistence.models;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.AspNetCore.Identity;
 
 var builder = WebApplication.CreateBuilder(args);
+
+
+
 
 Log.Logger = new LoggerConfiguration()
     .ReadFrom.Configuration(builder.Configuration)
@@ -12,6 +18,22 @@ builder.Host.UseSerilog();
 
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+// 1. Get Connection String
+var connectionString = builder.Configuration.GetConnectionString("IdentifyConnection");
+
+// 2. Register DbContext
+builder.Services.AddDbContext<CustomIdentityDbContext>(options =>
+    options.UseSqlServer(connectionString));
+
+// 3. Register Identity Services
+builder.Services.AddIdentity<AppUserModel, IdentityRole>(options => {
+    options.Password.RequireDigit = true;
+    options.Password.RequiredLength = 8;
+    options.Password.RequireNonAlphanumeric = false;
+})
+.AddEntityFrameworkStores<CustomIdentityDbContext>()
+.AddDefaultTokenProviders();
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();

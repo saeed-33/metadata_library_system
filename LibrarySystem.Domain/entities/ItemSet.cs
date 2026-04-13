@@ -3,15 +3,13 @@ using System.ComponentModel.DataAnnotations;
 
 namespace LibrarySystem.Domain.Entities
 {
-    public class ItemSet : BaseEntity
+    public class ItemSet : Resource
     {
-        [Required]
-        [StringLength(100)]
-        public string Name { get; set; } = string.Empty;
-
-        [StringLength(500)]
+        public ItemSet() => Type = "ItemSet";
+        public string Title { get; set; } = null!;
         public string? Description { get; set; }
+        public bool IsPublic { get; set; }
 
-        public virtual ICollection<ItemSetMember> ItemSetMembers { get; set; } = new List<ItemSetMember>();
+        public virtual ICollection<Item> Items { get; set; } = new List<Item>();
     }
 }

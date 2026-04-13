@@ -1,8 +1,11 @@
+using LibrarySystem.Domain.common;
+
 namespace LibrarySystem.Domain.Common
 {
-    public abstract class BaseEntity
+    public abstract class BaseEntity : ISoftDelete
     {
-        public int Id { get; set; }
-        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+        public int Id { get; protected set; }
+        public bool IsDeleted { get; set; }
+        public DateTime? DeletedAt { get; set; }
     }
 }

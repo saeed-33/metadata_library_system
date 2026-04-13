@@ -7,17 +7,10 @@ namespace LibrarySystem.Domain.Entities
 {
     public class Property : BaseEntity
     {
-        [Required]
-        [StringLength(100)]
-        public string Label { get; set; } = string.Empty;
-
-        [StringLength(500)]
-        public string? Description { get; set; } // "?" means it CAN be NULL in the DB
-
-        public PropertyDataType DataType { get; set; } // Enums are value types, not nullable by default
-
         public int VocabularyId { get; set; }
-        [ForeignKey("VocabularyId")]
-        public virtual Vocabulary? Vocabulary { get; set; } // Optional navigation
+        public virtual Vocabulary Vocabulary { get; set; } = null!;
+        public string LocalName { get; set; } = null!;
+        public string Label { get; set; } = null!;
+        public string TermUri { get; set; } = null!;
     }
 }

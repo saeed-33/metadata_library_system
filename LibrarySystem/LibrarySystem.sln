@@ -7,9 +7,11 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LibrarySystem.DataAccess", 
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LibrarySystem.Domain", "..\LibrarySystem.Domain\LibrarySystem.Domain.csproj", "{EC5825DF-0702-44D7-8FA0-840867F13B4E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LibrarySystem.Web", "..\LibrarySystem.Web\LibrarySystem.Web.csproj", "{E793E27F-BE04-4C0A-B894-1730C1E28025}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LibrarySystem.Web", "..\LibrarySystem.Web\LibrarySystem.Web.csproj", "{E793E27F-BE04-4C0A-B894-1730C1E28025}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LibrarySystem.Application", "..\LibrarySystem.Application\LibrarySystem.Application.csproj", "{D82C33E8-F727-4691-B0F1-5AB2FA276355}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LibrarySystem.Application", "..\LibrarySystem.Application\LibrarySystem.Application.csproj", "{D82C33E8-F727-4691-B0F1-5AB2FA276355}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "infrastructure", "infrastructure", "{4A2BBF7F-BBB4-4321-ADEE-6A8AFEFF4FC2}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -36,6 +38,9 @@ Global
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{B8D21251-2529-466A-B304-D80834A55E06} = {4A2BBF7F-BBB4-4321-ADEE-6A8AFEFF4FC2}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {B17446D2-7543-4653-923A-558989B209D0}

@@ -1,11 +1,7 @@
-﻿using LibrarySystem.Application.Interfaces;
+﻿using AutoMapper;
+using LibrarySystem.Application.Interfaces;
 using LibrarySystem.Domain.Entities;
 using MediatR;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace LibrarySystem.Application.Commands
 {
@@ -20,9 +16,10 @@ namespace LibrarySystem.Application.Commands
     public class UpdateVocabularyCommandHandler : IRequestHandler<UpdateVocabularyCommand, bool>
     {
         private readonly IGenericRepository<Vocabulary> _repository;
-
-        public UpdateVocabularyCommandHandler(IGenericRepository<Vocabulary> repository)
+        private readonly IMapper _mapper;
+        public UpdateVocabularyCommandHandler(IGenericRepository<Vocabulary> repository, IMapper mapper)
         {
+            _mapper = mapper;
             _repository = repository;
         }
 
@@ -37,9 +34,7 @@ namespace LibrarySystem.Application.Commands
             }
 
             // 2. Update the properties
-            vocabulary.Prefix = request.Prefix;
-            vocabulary.NamespaceUri = request.NamespaceUri;
-            vocabulary.Label = request.Label;
+            _mapper.Map(request, vocabulary);
 
             // 3. Save changes
             _repository.Update(vocabulary);

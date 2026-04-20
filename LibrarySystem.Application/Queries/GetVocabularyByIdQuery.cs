@@ -1,8 +1,8 @@
-﻿using LibrarySystem.Application.DTOs;
+﻿using AutoMapper;
+using LibrarySystem.Application.DTOs;
 using LibrarySystem.Application.Interfaces;
 using LibrarySystem.Domain.Entities;
 using MediatR;
-
 namespace LibrarySystem.Application.Queries
 {
     public record GetVocabularyByIdQuery(int Id) : IRequest<VocabularyResponse?>;
@@ -11,10 +11,12 @@ namespace LibrarySystem.Application.Queries
     public class GetVocabularyByIdQueryHandler : IRequestHandler<GetVocabularyByIdQuery, VocabularyResponse?>
     {
         private readonly IGenericRepository<Vocabulary> _repository;
-
-        public GetVocabularyByIdQueryHandler(IGenericRepository<Vocabulary> repository)
+        private readonly IMapper _mapper;
+        public GetVocabularyByIdQueryHandler(IGenericRepository<Vocabulary> repository, IMapper mapper)
         {
             _repository = repository;
+            _mapper = mapper;
+
         }
 
         public async Task<VocabularyResponse?> Handle(GetVocabularyByIdQuery request, CancellationToken cancellationToken)
@@ -28,12 +30,7 @@ namespace LibrarySystem.Application.Queries
             }
 
             // 2. Map Entity to DTO
-            return new VocabularyResponse(
-                vocabulary.Id,
-                vocabulary.Prefix,
-                vocabulary.NamespaceUri,
-                vocabulary.Label
-            );
+            return _mapper.Map<VocabularyResponse>(vocabulary);
         }
     }
 

@@ -35,6 +35,11 @@ builder.Services.AddIdentity<AppUserModel, IdentityRole>(options => {
 .AddEntityFrameworkStores<CustomIdentityDbContext>()
 .AddDefaultTokenProviders();
 
+
+builder.Services.AddAutoMapper(config =>
+{
+    config.AddProfile<LibrarySystem.Application.Mappings.MappingProfile>();
+});
 // Add services to the container.
 builder.Services.AddControllersWithViews();
 

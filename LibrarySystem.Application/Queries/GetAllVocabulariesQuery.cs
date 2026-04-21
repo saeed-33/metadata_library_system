@@ -10,17 +10,17 @@ namespace LibrarySystem.Application.Queries
     // 2. The Handler
     public class GetAllVocabulariesQueryHandler : IRequestHandler<GetAllVocabulariesQuery, IEnumerable<VocabularyResponse>>
     {
-        private readonly IGenericRepository<Vocabulary> _repository;
+        private readonly IUnitOfWork _unitOfWork;
 
-        public GetAllVocabulariesQueryHandler(IGenericRepository<Vocabulary> repository)
+        public GetAllVocabulariesQueryHandler(IUnitOfWork unitOfWork)
         {
-            _repository = repository;
+            _unitOfWork = unitOfWork;
         }
 
         public async Task<IEnumerable<VocabularyResponse>> Handle(GetAllVocabulariesQuery request, CancellationToken cancellationToken)
         {
             // 1. Get all from repository
-            var vocabularies = await _repository.GetAllAsync();
+            var vocabularies = await _unitOfWork.Vocabularies.GetAllAsync();
 
             // 2. Map Entities to DTOs
             var response = vocabularies.Select(v => new VocabularyResponse(

@@ -13,11 +13,11 @@ namespace LibrarySystem.Application.Commands
 
     public class CreateVocabularyCommandHandler : IRequestHandler<CreateVocabularyCommand, int>
     {
-        private readonly IGenericRepository<Vocabulary> _repository;
+        private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
-        public CreateVocabularyCommandHandler(IGenericRepository<Vocabulary> repository, IMapper mapper)
+        public CreateVocabularyCommandHandler(IUnitOfWork unitOfWork, IMapper mapper)
         {
-            _repository = repository;
+            _unitOfWork = unitOfWork;
             _mapper = mapper;
         }
 
@@ -25,8 +25,8 @@ namespace LibrarySystem.Application.Commands
         {
             var vocabulary = _mapper.Map<Vocabulary>(request);
 
-            await _repository.AddAsync(vocabulary);
-            await _repository.SaveChangesAsync();
+            await _unitOfWork.Vocabularies.AddAsync(vocabulary);
+            await _unitOfWork.SaveChangesAsync(); 
 
             return vocabulary.Id;
         }

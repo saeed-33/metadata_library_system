@@ -10,11 +10,11 @@ namespace LibrarySystem.Application.Queries
     // 2. The Handler
     public class GetVocabularyByIdQueryHandler : IRequestHandler<GetVocabularyByIdQuery, VocabularyResponse?>
     {
-        private readonly IGenericRepository<Vocabulary> _repository;
+        private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
-        public GetVocabularyByIdQueryHandler(IGenericRepository<Vocabulary> repository, IMapper mapper)
+        public GetVocabularyByIdQueryHandler(IUnitOfWork unitOfWork, IMapper mapper)
         {
-            _repository = repository;
+            _unitOfWork = unitOfWork;
             _mapper = mapper;
 
         }
@@ -22,7 +22,7 @@ namespace LibrarySystem.Application.Queries
         public async Task<VocabularyResponse?> Handle(GetVocabularyByIdQuery request, CancellationToken cancellationToken)
         {
             // 1. Get from repository
-            var vocabulary = await _repository.GetByIdAsync(request.Id);
+            var vocabulary = await _unitOfWork.Vocabularies.GetByIdAsync(request.Id);
 
             if (vocabulary == null)
             {

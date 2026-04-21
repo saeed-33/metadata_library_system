@@ -1,4 +1,5 @@
-﻿using LibrarySystem.Application.DTOs;
+﻿using AutoMapper;
+using LibrarySystem.Application.DTOs;
 using LibrarySystem.Application.Interfaces;
 using LibrarySystem.Domain.Entities;
 using MediatR;
@@ -23,12 +24,9 @@ namespace LibrarySystem.Application.Queries
             var vocabularies = await _unitOfWork.Vocabularies.GetAllAsync();
 
             // 2. Map Entities to DTOs
-            var response = vocabularies.Select(v => new VocabularyResponse(
-                v.Id,
-                v.Prefix,
-                v.NamespaceUri,
-                v.Label
-            ));
+          
+
+            var response = _mapper.Map<List<VocabularyResponse>>(vocabularies);
 
             return response;
         }

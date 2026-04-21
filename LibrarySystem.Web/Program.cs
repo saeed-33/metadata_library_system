@@ -38,7 +38,7 @@ builder.Services.AddIdentity<AppUserModel, IdentityRole>(options => {
 
 builder.Services.AddAutoMapper(config =>
 {
-    config.AddProfile<LibrarySystem.Application.Mappings.MappingProfile>();
+    config.AddProfile<LibrarySystem.Application.Mappings.VocabularyMappingProfile>();
 });
 // Add services to the container.
 builder.Services.AddControllersWithViews();

@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace LibrarySystem.Domain.entities
+namespace LibrarySystem.Domain.Entities
 {
     public class SystemUser : BaseEntity
     {

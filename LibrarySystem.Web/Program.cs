@@ -4,6 +4,8 @@ using Serilog;
 using LibrarySystem.DataAccess.Persistence.models;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.AspNetCore.Identity;
+using LibrarySystem.Application.Interfaces;
+using LibrarySystem.DataAccess.Repositories;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -42,6 +44,16 @@ builder.Services.AddAutoMapper(config =>
 });
 // Add services to the container.
 builder.Services.AddControllersWithViews();
+
+// Unit of Work (replaces individual IGenericRepository registrations)
+builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
+
+// Register MediatR and scan all handlers in Application layer
+builder.Services.AddMediatR(cfg =>
+    cfg.RegisterServicesFromAssembly(
+        typeof(LibrarySystem.Application.Commands.CreateVocabularyCommand).Assembly
+    ));
+
 
 var app = builder.Build();
 

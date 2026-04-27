@@ -17,4 +17,10 @@
     <ProjectReference Include="..\LibrarySystem.Domain\LibrarySystem.Domain.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="DTOs\Users\" />
+    <Folder Include="Queries\Users\" />
+    <Folder Include="Validators\Users\" />
+  </ItemGroup>
+
 </Project>

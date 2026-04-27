@@ -26,3 +26,12 @@ public class UpdateItemCommandValidator : AbstractValidator<UpdateItemCommand>
         });
     }
 }
+
+/*استخدمنا 
+ * RuleForEach
+ * للتحقق من مصفوفة القيم المرسلة
+ * (Nested Objects). 
+ * هذا يضمن أن المستخدم لا يمكنه تعديل كتاب وإدخال روابط
+ * (URIs) غير صحيحة أو ترك حقول إجبارية فارغة، مما يحافظ على جودة الـ
+ * Metadata Standards
+ * المتبعة في النظام."*/

@@ -17,8 +17,4 @@
     <ProjectReference Include="..\LibrarySystem.Domain\LibrarySystem.Domain.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Validators\ResourceTemplates\" />
-  </ItemGroup>
-
 </Project>

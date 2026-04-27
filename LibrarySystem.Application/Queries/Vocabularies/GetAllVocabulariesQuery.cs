@@ -12,10 +12,12 @@ namespace LibrarySystem.Application.Queries
     public class GetAllVocabulariesQueryHandler : IRequestHandler<GetAllVocabulariesQuery, IEnumerable<VocabularyResponse>>
     {
         private readonly IUnitOfWork _unitOfWork;
-
-        public GetAllVocabulariesQueryHandler(IUnitOfWork unitOfWork)
+        private readonly IMapper _mapper;
+        public GetAllVocabulariesQueryHandler(IUnitOfWork unitOfWork, IMapper mapper)
         {
             _unitOfWork = unitOfWork;
+            _mapper = mapper;
+
         }
 
         public async Task<IEnumerable<VocabularyResponse>> Handle(GetAllVocabulariesQuery request, CancellationToken cancellationToken)

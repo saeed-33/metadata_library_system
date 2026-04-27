@@ -12,8 +12,10 @@ namespace LibrarySystem.Domain.Entities
         public DateTime? ModifiedAt { get; set; }
         public string? ModifiedBy { get; set; }
         public int? OwnerId { get; set; }
+        public virtual SystemUser? Owner { get; set; }
 
         private readonly List<Value> _values = new();
+
         public virtual IReadOnlyCollection<Value> Values => _values.AsReadOnly();
     }
 }

@@ -1,11 +1,7 @@
-﻿using LibrarySystem.Application.Interfaces;
+﻿using AutoMapper;
+using LibrarySystem.Application.Interfaces;
 using LibrarySystem.Domain.Entities;
 using MediatR;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace LibrarySystem.Application.Commands
 {
@@ -19,17 +15,18 @@ namespace LibrarySystem.Application.Commands
     // 2. The Handler
     public class UpdateVocabularyCommandHandler : IRequestHandler<UpdateVocabularyCommand, bool>
     {
-        private readonly IGenericRepository<Vocabulary> _repository;
-
-        public UpdateVocabularyCommandHandler(IGenericRepository<Vocabulary> repository)
+        private readonly IUnitOfWork _unitOfWork;
+        private readonly IMapper _mapper;
+        public UpdateVocabularyCommandHandler(IUnitOfWork unitOfWork, IMapper mapper)
         {
-            _repository = repository;
+            _mapper = mapper;
+            _unitOfWork = unitOfWork;
         }
 
         public async Task<bool> Handle(UpdateVocabularyCommand request, CancellationToken cancellationToken)
         {
             // 1. Fetch the existing entity from the database
-            var vocabulary = await _repository.GetByIdAsync(request.Id);
+            var vocabulary = await _unitOfWork.Vocabularies.GetByIdAsync(request.Id);
 
             if (vocabulary == null)
             {
@@ -37,13 +34,11 @@ namespace LibrarySystem.Application.Commands
             }
 
             // 2. Update the properties
-            vocabulary.Prefix = request.Prefix;
-            vocabulary.NamespaceUri = request.NamespaceUri;
-            vocabulary.Label = request.Label;
+            _mapper.Map(request, vocabulary);
 
             // 3. Save changes
-            _repository.Update(vocabulary);
-            await _repository.SaveChangesAsync();
+            _unitOfWork.Vocabularies.Update(vocabulary);
+            await _unitOfWork.SaveChangesAsync();
 
             return true;
         }

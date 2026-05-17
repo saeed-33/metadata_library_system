@@ -22,7 +22,5 @@ namespace LibrarySystem.Application.Interfaces
         // حذف (في حالتنا سيكون Soft Delete)
         void Delete(T entity);
 
-        // حفظ التغييرات في قاعدة البيانات
-        Task<int> SaveChangesAsync();
     }
 }

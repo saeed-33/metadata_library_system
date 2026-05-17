@@ -8,12 +8,19 @@
 
   <ItemGroup>
     <PackageReference Include="AutoMapper" Version="16.1.1" />
-    <PackageReference Include="FluentValidation" Version="6.4.1" />
+    <PackageReference Include="FluentValidation" Version="11.0.0" />
+    <PackageReference Include="FluentValidation.DependencyInjectionExtensions" Version="11.0.0" />
     <PackageReference Include="MediatR" Version="14.1.0" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\LibrarySystem.Domain\LibrarySystem.Domain.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="DTOs\Users\" />
+    <Folder Include="Queries\Users\" />
+    <Folder Include="Validators\Users\" />
   </ItemGroup>
 
 </Project>

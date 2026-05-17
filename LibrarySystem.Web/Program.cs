@@ -1,16 +1,14 @@
-using Microsoft.EntityFrameworkCore;
-using LibrarySystem.DataAccess.Persistence.Contexts;
-using Serilog;
+using LibrarySystem.Application;
+using LibrarySystem.DataAccess;
 using LibrarySystem.DataAccess.Persistence.models;
-using Microsoft.Extensions.DependencyInjection;
+using LibrarySystem.DataAccess.Persistence.Seeds;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
-using LibrarySystem.Application.Interfaces;
-using LibrarySystem.DataAccess.Repositories;
+using Microsoft.IdentityModel.Tokens;
+using Serilog;
+using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
-
-
-
 
 Log.Logger = new LoggerConfiguration()
     .ReadFrom.Configuration(builder.Configuration)
@@ -18,52 +16,43 @@ Log.Logger = new LoggerConfiguration()
 
 builder.Host.UseSerilog();
 
-var defaultConnection = builder.Configuration.GetConnectionString("DefaultConnection")
-    ?? throw new InvalidOperationException("DefaultConnection is missing.");
+builder.Services.AddApplicationServices();
+builder.Services.AddInfrastructureServices(builder.Configuration);
 
-var identityConnection = builder.Configuration.GetConnectionString("IdentifyConnection")
-    ?? throw new InvalidOperationException("IdentifyConnection is missing.");
-
-builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseSqlServer(defaultConnection));
-
-builder.Services.AddDbContext<CustomIdentityDbContext>(options =>
-    options.UseSqlServer(identityConnection));
-
-builder.Services.AddIdentity<AppUserModel, AppRoleModel>(options => {
-    options.Password.RequireDigit = true;
-    options.Password.RequiredLength = 8;
-    options.Password.RequireNonAlphanumeric = false;
-})
-.AddEntityFrameworkStores<CustomIdentityDbContext>()
-.AddDefaultTokenProviders();
-
-
-builder.Services.AddAutoMapper(config =>
+builder.Services.AddAuthentication(options =>
 {
-    config.AddProfile<LibrarySystem.Application.Mappings.VocabularyMappingProfile>();
-    config.AddProfile<LibrarySystem.DataAccess.Mappings.PersistenceMappingProfile>();
+    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+})
+.AddJwtBearer(options =>
+{
+    options.TokenValidationParameters = new TokenValidationParameters
+    {
+        ValidateIssuer = true,
+        ValidateAudience = true,
+        ValidateLifetime = true,
+        ValidateIssuerSigningKey = true,
+        ValidIssuer = builder.Configuration["Jwt:Issuer"],
+        ValidAudience = builder.Configuration["Jwt:Audience"],
+        IssuerSigningKey = new SymmetricSecurityKey(
+            Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]
+                ?? throw new InvalidOperationException("Jwt:Key is missing.")))
+    };
 });
-// Add services to the container.
+
 builder.Services.AddControllersWithViews();
-
-// Unit of Work (replaces individual IGenericRepository registrations)
-builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
-
-// Register MediatR and scan all handlers in Application layer
-builder.Services.AddMediatR(cfg =>
-    cfg.RegisterServicesFromAssembly(
-        typeof(LibrarySystem.Application.Commands.CreateVocabularyCommand).Assembly
-    ));
-
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
+using (var scope = app.Services.CreateScope())
+{
+    var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<AppRoleModel>>();
+    await RoleSeeder.SeedRolesAsync(roleManager);
+}
+
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Home/Error");
-    // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
     app.UseHsts();
 }
 
@@ -78,5 +67,7 @@ app.UseAuthorization();
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}");
+
+app.MapControllers();
 
 app.Run();

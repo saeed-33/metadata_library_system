@@ -1,7 +1,6 @@
-﻿using Microsoft.EntityFrameworkCore;
-using LibrarySystem.Domain.Entities;
+﻿using LibrarySystem.DataAccess.Persistence.models;
 using LibrarySystem.Domain.common;
-using LibrarySystem.DataAccess.Persistence.models;
+using Microsoft.EntityFrameworkCore;
 using System.Linq.Expressions;
 
 namespace LibrarySystem.DataAccess.Persistence.Contexts
@@ -55,7 +54,7 @@ namespace LibrarySystem.DataAccess.Persistence.Contexts
 
         public override async Task<int> SaveChangesAsync(CancellationToken ct = default)
         {
-            foreach (var entry in ChangeTracker.Entries<BasePersistenceModel>())
+            foreach (var entry in ChangeTracker.Entries<ISoftDelete>())
             {
                 if (entry.State == EntityState.Deleted)
                 {
@@ -63,7 +62,11 @@ namespace LibrarySystem.DataAccess.Persistence.Contexts
                     entry.Entity.IsDeleted = true;
                     entry.Entity.DeletedAt = DateTime.UtcNow;
                 }
-                else if (entry.State == EntityState.Added) entry.Entity.CreatedAt = DateTime.UtcNow;
+
+            }
+            foreach (var entry in ChangeTracker.Entries<BasePersistenceModel>())
+            {
+                if (entry.State == EntityState.Added) entry.Entity.CreatedAt = DateTime.UtcNow;
                 else if (entry.State == EntityState.Modified) entry.Entity.ModifiedAt = DateTime.UtcNow;
             }
             return await base.SaveChangesAsync(ct);

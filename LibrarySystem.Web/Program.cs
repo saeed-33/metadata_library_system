@@ -18,18 +18,19 @@ Log.Logger = new LoggerConfiguration()
 
 builder.Host.UseSerilog();
 
+var defaultConnection = builder.Configuration.GetConnectionString("DefaultConnection")
+    ?? throw new InvalidOperationException("DefaultConnection is missing.");
+
+var identityConnection = builder.Configuration.GetConnectionString("IdentifyConnection")
+    ?? throw new InvalidOperationException("IdentifyConnection is missing.");
+
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+    options.UseSqlServer(defaultConnection));
 
-// 1. Get Connection String
-var connectionString = builder.Configuration.GetConnectionString("IdentifyConnection");
-
-// 2. Register DbContext
 builder.Services.AddDbContext<CustomIdentityDbContext>(options =>
-    options.UseSqlServer(connectionString));
+    options.UseSqlServer(identityConnection));
 
-// 3. Register Identity Services
-builder.Services.AddIdentity<AppUserModel, IdentityRole>(options => {
+builder.Services.AddIdentity<AppUserModel, AppRoleModel>(options => {
     options.Password.RequireDigit = true;
     options.Password.RequiredLength = 8;
     options.Password.RequireNonAlphanumeric = false;
@@ -41,6 +42,7 @@ builder.Services.AddIdentity<AppUserModel, IdentityRole>(options => {
 builder.Services.AddAutoMapper(config =>
 {
     config.AddProfile<LibrarySystem.Application.Mappings.VocabularyMappingProfile>();
+    config.AddProfile<LibrarySystem.DataAccess.Mappings.PersistenceMappingProfile>();
 });
 // Add services to the container.
 builder.Services.AddControllersWithViews();
@@ -70,6 +72,7 @@ app.UseStaticFiles();
 
 app.UseRouting();
 
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllerRoute(

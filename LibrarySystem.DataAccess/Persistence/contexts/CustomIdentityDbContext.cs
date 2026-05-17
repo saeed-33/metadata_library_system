@@ -7,6 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using LibrarySystem.DataAccess.Persistence.models;
+using LibrarySystem.Domain.common;
 
 namespace LibrarySystem.DataAccess.Persistence.Contexts
 {
@@ -22,6 +23,8 @@ namespace LibrarySystem.DataAccess.Persistence.Contexts
         {
             base.OnModelCreating(builder);
 
+            builder.Entity<AppRoleModel>().HasQueryFilter(role => !role.IsDeleted);
+
             builder.Ignore<SystemUserModel>();
             builder.Ignore<ResourceModel>();
             builder.Ignore<ItemModel>();
@@ -33,6 +36,21 @@ namespace LibrarySystem.DataAccess.Persistence.Contexts
             builder.Ignore<ResourceTemplateModel>();
             builder.Ignore<TemplatePropertyModel>();
             // You can customize Identity table names here if you want (e.g. builder.Entity<ApplicationUserModel>().ToTable("Users");)
+        }
+
+        public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
+        {
+            foreach (var entry in ChangeTracker.Entries<ISoftDelete>())
+            {
+                if (entry.State == EntityState.Deleted)
+                {
+                    entry.State = EntityState.Modified;
+                    entry.Entity.IsDeleted = true;
+                    entry.Entity.DeletedAt = DateTime.UtcNow;
+                }
+            }
+
+            return await base.SaveChangesAsync(cancellationToken);
         }
     }
 }

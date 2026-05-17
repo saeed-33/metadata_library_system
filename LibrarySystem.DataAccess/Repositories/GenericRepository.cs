@@ -44,6 +44,5 @@ namespace LibrarySystem.DataAccess.Repositories
             _dbSet.Remove(entity);
         }
 
-        public async Task<int> SaveChangesAsync() => await _context.SaveChangesAsync();
     }
 }

@@ -24,7 +24,7 @@ namespace LibrarySystem.DataAccess.Repositories
         public IGenericRepository<Resource> Resources { get; }
         public IGenericRepository<Item> Items { get; }
         public IGenericRepository<Media> Medias { get; }
-        public IGenericRepository<ItemSet> ItemSets { get; }
+        public IItemSetRepository ItemSets { get; }
         public IGenericRepository<Value> Values { get; }
         public IGenericRepository<SystemUser> SystemUsers { get; }
 
@@ -39,7 +39,9 @@ namespace LibrarySystem.DataAccess.Repositories
             Resources = CreateRepository<Resource, ResourceModel>(mapper);
             Items = CreateRepository<Item, ItemModel>(mapper);
             Medias = CreateRepository<Media, MediaModel>(mapper);
-            ItemSets = CreateRepository<ItemSet, ItemSetModel>(mapper);
+            var itemSetRepository = new ItemSetRepository(_context, mapper);
+            ItemSets = itemSetRepository;
+            _repositoriesWithGeneratedKeys.Add(itemSetRepository);
             Values = CreateRepository<Value, ValueModel>(mapper);
             SystemUsers = CreateRepository<SystemUser, SystemUserModel>(mapper);
         }

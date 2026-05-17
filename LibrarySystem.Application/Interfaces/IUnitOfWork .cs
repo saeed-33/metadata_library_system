@@ -16,7 +16,7 @@ namespace LibrarySystem.Application.Interfaces
         IGenericRepository<Resource> Resources { get; }
         IGenericRepository<Item> Items { get; }
         IGenericRepository<Media> Medias { get; }
-        IGenericRepository<ItemSet> ItemSets { get; }
+        IItemSetRepository ItemSets { get; }
         IGenericRepository<Value> Values { get; }
 
 

@@ -19,5 +19,6 @@ namespace LibrarySystem.DataAccess.Persistence.models
         public string? Description { get; set; }
 
         public bool IsPublic { get; set; } = true;
+        public virtual ICollection<ItemModel> Items { get; set; } = new List<ItemModel>();
     }
 }

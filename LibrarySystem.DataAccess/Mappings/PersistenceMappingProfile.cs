@@ -13,7 +13,10 @@ namespace LibrarySystem.DataAccess.Mappings
             CreateMap<ResourceTemplate, ResourceTemplateModel>().ReverseMap();
             CreateMap<TemplateProperty, TemplatePropertyModel>().ReverseMap();
             CreateMap<Resource, ResourceModel>().ReverseMap();
-            CreateMap<Item, ItemModel>().ReverseMap();
+            CreateMap<Item, ItemModel>()
+                .ForMember(dest => dest.ItemSets, opt => opt.Ignore())
+                .ReverseMap()
+                .ForMember(dest => dest.ItemSets, opt => opt.Ignore());
             CreateMap<Media, MediaModel>().ReverseMap();
             CreateMap<ItemSet, ItemSetModel>().ReverseMap();
             CreateMap<Value, ValueModel>().ReverseMap();

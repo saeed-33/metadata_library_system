@@ -29,6 +29,25 @@ namespace LibrarySystem.DataAccess.Persistence.Contexts
             modelBuilder.Entity<MediaModel>().ToTable("Media");
             modelBuilder.Entity<ItemSetModel>().ToTable("ItemSets");
 
+            modelBuilder.Entity<ItemSetModel>()
+                .HasMany(itemSet => itemSet.Items)
+                .WithMany(item => item.ItemSets)
+                .UsingEntity<Dictionary<string, object>>(
+                    "ItemSetItems",
+                    right => right.HasOne<ItemModel>()
+                        .WithMany()
+                        .HasForeignKey("ItemId")
+                        .OnDelete(DeleteBehavior.Restrict),
+                    left => left.HasOne<ItemSetModel>()
+                        .WithMany()
+                        .HasForeignKey("ItemSetId")
+                        .OnDelete(DeleteBehavior.Cascade),
+                    join =>
+                    {
+                        join.HasKey("ItemSetId", "ItemId");
+                        join.ToTable("ItemSetItems");
+                    });
+
             modelBuilder.Entity<TemplatePropertyModel>().HasKey(tp => new { tp.TemplateId, tp.PropertyId });
 
             // Linking Resource to SystemUser (The Library Profile)

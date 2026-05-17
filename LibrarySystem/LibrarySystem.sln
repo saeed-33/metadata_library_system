@@ -13,6 +13,12 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LibrarySystem.Application",
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "infrastructure", "infrastructure", "{4A2BBF7F-BBB4-4321-ADEE-6A8AFEFF4FC2}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LibrarySystem.API", "LibrarySystem.API\LibrarySystem.API.csproj", "{81E0A991-C6F4-41A9-8E0E-1D5C9EE6E742}"
+	ProjectSection(ProjectDependencies) = postProject
+		{B8D21251-2529-466A-B304-D80834A55E06} = {B8D21251-2529-466A-B304-D80834A55E06}
+		{D82C33E8-F727-4691-B0F1-5AB2FA276355} = {D82C33E8-F727-4691-B0F1-5AB2FA276355}
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -35,6 +41,10 @@ Global
 		{D82C33E8-F727-4691-B0F1-5AB2FA276355}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D82C33E8-F727-4691-B0F1-5AB2FA276355}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D82C33E8-F727-4691-B0F1-5AB2FA276355}.Release|Any CPU.Build.0 = Release|Any CPU
+		{81E0A991-C6F4-41A9-8E0E-1D5C9EE6E742}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{81E0A991-C6F4-41A9-8E0E-1D5C9EE6E742}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{81E0A991-C6F4-41A9-8E0E-1D5C9EE6E742}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{81E0A991-C6F4-41A9-8E0E-1D5C9EE6E742}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

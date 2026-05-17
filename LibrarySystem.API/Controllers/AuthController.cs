@@ -8,7 +8,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 
-namespace LibrarySystem.Web.Controllers
+namespace LibrarySystem.API.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
@@ -83,7 +83,7 @@ namespace LibrarySystem.Web.Controllers
             return Ok("Logged out successfully.");
         }
 
-        // ── JWT Helper ──────────────────────────────────────────────
+        // JWT helper.
         private async Task<string> GenerateJwtToken(AppUserModel user)
         {
             var roles = await _userManager.GetRolesAsync(user);

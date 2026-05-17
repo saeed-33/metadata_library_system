@@ -3,13 +3,11 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.0.31903.59
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LibrarySystem.DataAccess", "..\LibrarySystem.DataAccess\LibrarySystem.DataAccess.csproj", "{B8D21251-2529-466A-B304-D80834A55E06}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LibrarySystem.DataAccess", "LibrarySystem.DataAccess\LibrarySystem.DataAccess.csproj", "{B8D21251-2529-466A-B304-D80834A55E06}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LibrarySystem.Domain", "..\LibrarySystem.Domain\LibrarySystem.Domain.csproj", "{EC5825DF-0702-44D7-8FA0-840867F13B4E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LibrarySystem.Domain", "LibrarySystem.Domain\LibrarySystem.Domain.csproj", "{EC5825DF-0702-44D7-8FA0-840867F13B4E}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LibrarySystem.Web", "..\LibrarySystem.Web\LibrarySystem.Web.csproj", "{E793E27F-BE04-4C0A-B894-1730C1E28025}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LibrarySystem.Application", "..\LibrarySystem.Application\LibrarySystem.Application.csproj", "{D82C33E8-F727-4691-B0F1-5AB2FA276355}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LibrarySystem.Application", "LibrarySystem.Application\LibrarySystem.Application.csproj", "{D82C33E8-F727-4691-B0F1-5AB2FA276355}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "infrastructure", "infrastructure", "{4A2BBF7F-BBB4-4321-ADEE-6A8AFEFF4FC2}"
 EndProject
@@ -33,10 +31,6 @@ Global
 		{EC5825DF-0702-44D7-8FA0-840867F13B4E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{EC5825DF-0702-44D7-8FA0-840867F13B4E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{EC5825DF-0702-44D7-8FA0-840867F13B4E}.Release|Any CPU.Build.0 = Release|Any CPU
-		{E793E27F-BE04-4C0A-B894-1730C1E28025}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{E793E27F-BE04-4C0A-B894-1730C1E28025}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{E793E27F-BE04-4C0A-B894-1730C1E28025}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{E793E27F-BE04-4C0A-B894-1730C1E28025}.Release|Any CPU.Build.0 = Release|Any CPU
 		{D82C33E8-F727-4691-B0F1-5AB2FA276355}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{D82C33E8-F727-4691-B0F1-5AB2FA276355}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D82C33E8-F727-4691-B0F1-5AB2FA276355}.Release|Any CPU.ActiveCfg = Release|Any CPU

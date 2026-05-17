@@ -16,6 +16,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
     <ProjectReference Include="..\LibrarySystem.Application\LibrarySystem.Application.csproj" />
     <ProjectReference Include="..\LibrarySystem.Domain\LibrarySystem.Domain.csproj" />
   </ItemGroup>

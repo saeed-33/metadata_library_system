@@ -1,4 +1,4 @@
-using LibrarySystem.Application.Interfaces;
+﻿using LibrarySystem.Application.Interfaces;
 using LibrarySystem.DataAccess.Persistence.Contexts;
 using LibrarySystem.DataAccess.Persistence.models;
 using LibrarySystem.DataAccess.Repositories;
@@ -42,6 +42,7 @@ namespace LibrarySystem.DataAccess
             });
 
             services.AddScoped<IUnitOfWork, UnitOfWork>();
+            services.AddScoped<IAuthService, AuthService>(); // ← after Identity
 
             return services;
         }

@@ -1,10 +1,9 @@
-﻿using AutoMapper;
+﻿using AutoMapper; // أضف هذا السطر
 using LibrarySystem.Application.Interfaces;
 using LibrarySystem.Domain.Entities;
 using MediatR;
 
 namespace LibrarySystem.Application.Commands.ResourceTemplates;
-
 // الطلب الذي سيصل من الفرونت اند (React)
 public record UpdateTemplatePropertiesCommand(
     int TemplateId,
@@ -18,7 +17,6 @@ public record TemplatePropertyRequest(
     int DisplayOrder,
     string? AlternateLabel
 );
-
 
 public class UpdateTemplatePropertiesCommandHandler : IRequestHandler<UpdateTemplatePropertiesCommand, bool>
 {
@@ -43,13 +41,10 @@ public class UpdateTemplatePropertiesCommandHandler : IRequestHandler<UpdateTemp
             _unitOfWork.TemplateProperties.Delete(link);
         }
 
-        // إضافة العلاقات الجديدة باستخدام AutoMapper
         foreach (var propReq in request.Properties)
         {
-            // تحويل الطلب إلى Entity
             var newRelation = _mapper.Map<TemplateProperty>(propReq);
 
-            // ربط الـ Entity بمعرف القالب (لأن المعرف موجود في الـ Command وليس في الـ Request)
             newRelation.TemplateId = request.TemplateId;
 
             await _unitOfWork.TemplateProperties.AddAsync(newRelation);

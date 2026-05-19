@@ -1,4 +1,5 @@
-﻿using LibrarySystem.Application.Interfaces;
+﻿using AutoMapper;
+using LibrarySystem.Application.Interfaces;
 using LibrarySystem.Domain.Entities;
 using MediatR;
 
@@ -18,41 +19,42 @@ public record TemplatePropertyRequest(
     string? AlternateLabel
 );
 
+
 public class UpdateTemplatePropertiesCommandHandler : IRequestHandler<UpdateTemplatePropertiesCommand, bool>
 {
     private readonly IUnitOfWork _unitOfWork;
+    private readonly IMapper _mapper; // حقن المابير
 
-    public UpdateTemplatePropertiesCommandHandler(IUnitOfWork unitOfWork) => _unitOfWork = unitOfWork;
+    public UpdateTemplatePropertiesCommandHandler(IUnitOfWork unitOfWork, IMapper mapper)
+    {
+        _unitOfWork = unitOfWork;
+        _mapper = mapper;
+    }
 
     public async Task<bool> Handle(UpdateTemplatePropertiesCommand request, CancellationToken cancellationToken)
     {
-        // 1. التأكد من وجود القالب أولاً
         var template = await _unitOfWork.ResourceTemplates.GetByIdAsync(request.TemplateId);
         if (template == null) return false;
 
-        // 2. مسح العلاقات القديمة (Logic: Reset then Insert)
-        // هذا الأسلوب هو الأفضل لضمان مزامنة قائمة الخصائص مع ما يراه المستخدم في الواجهة
+        // مسح العلاقات القديمة
         var currentLinks = await _unitOfWork.TemplateProperties.FindAsync(tp => tp.TemplateId == request.TemplateId);
         foreach (var link in currentLinks)
         {
             _unitOfWork.TemplateProperties.Delete(link);
         }
 
-        // 3. إضافة العلاقات الجديدة بناءً على الطلب
+        // إضافة العلاقات الجديدة باستخدام AutoMapper
         foreach (var propReq in request.Properties)
         {
-            var newRelation = new TemplateProperty
-            {
-                TemplateId = request.TemplateId,
-                PropertyId = propReq.PropertyId,
-                IsRequired = propReq.IsRequired,
-                DisplayOrder = propReq.DisplayOrder,
-                AlternateLabel = propReq.AlternateLabel
-            };
+            // تحويل الطلب إلى Entity
+            var newRelation = _mapper.Map<TemplateProperty>(propReq);
+
+            // ربط الـ Entity بمعرف القالب (لأن المعرف موجود في الـ Command وليس في الـ Request)
+            newRelation.TemplateId = request.TemplateId;
+
             await _unitOfWork.TemplateProperties.AddAsync(newRelation);
         }
 
-        // 4. الحفظ في قاعدة البيانات
         await _unitOfWork.SaveChangesAsync();
         return true;
     }

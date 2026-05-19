@@ -7,5 +7,7 @@ namespace LibrarySystem.Application.Interfaces
         Task<AuthResponse> RegisterAsync(RegisterRequest request);
         Task<AuthResponse> LoginAsync(LoginRequest request);
         Task LogoutAsync();
+        Task<AuthResponse> LoginWithGoogleAsync(string idToken); 
+
     }
 }

@@ -51,6 +51,23 @@ namespace LibrarySystem.API.Controllers
             await _authService.LogoutAsync();
             return Ok("Logged out successfully.");
         }
+        [HttpPost("login-google")]
+        public async Task<IActionResult> LoginWithGoogle(GoogleAuthRequest request)
+        {
+            try
+            {
+                var response = await _authService.LoginWithGoogleAsync(request.IdToken);
+                return Ok(response);
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                return Unauthorized(ex.Message);
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
     }
 }
 }

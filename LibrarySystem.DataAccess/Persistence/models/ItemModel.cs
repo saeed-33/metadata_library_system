@@ -11,6 +11,8 @@ namespace LibrarySystem.DataAccess.Persistence.models
     public class ItemModel : ResourceModel
     {
         public int? TemplateId { get; set; }
+        public ResourceTemplateModel? Template { get; set; }
+        public virtual ICollection<MediaModel> Medias { get; set; } = new List<MediaModel>();
         public virtual ICollection<ItemSetModel> ItemSets { get; set; } = new List<ItemSetModel>();
     }
 }

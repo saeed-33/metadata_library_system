@@ -50,6 +50,12 @@ namespace LibrarySystem.DataAccess.Persistence.Contexts
                 }
             }
 
+            foreach (var entry in ChangeTracker.Entries<IAuditable>())
+            {
+                if (entry.State == EntityState.Added) entry.Entity.CreatedAt = DateTime.UtcNow;
+                else if (entry.State == EntityState.Modified) entry.Entity.ModifiedAt = DateTime.UtcNow;
+            }
+
             return await base.SaveChangesAsync(cancellationToken);
         }
     }

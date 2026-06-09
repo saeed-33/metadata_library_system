@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 namespace LibrarySystem.DataAccess.Persistence.models
 {
     [Table("TemplateProperties")]
-    public class TemplatePropertyModel
+    public class TemplatePropertyModel : ISoftDelete
     {
         public int TemplateId { get; set; }
         [ForeignKey("TemplateId")]
@@ -26,5 +26,8 @@ namespace LibrarySystem.DataAccess.Persistence.models
 
         [StringLength(100)]
         public string? AlternateLabel { get; set; }
+
+        public bool IsDeleted { get; set; }
+        public DateTime? DeletedAt { get; set; }
     }
 }

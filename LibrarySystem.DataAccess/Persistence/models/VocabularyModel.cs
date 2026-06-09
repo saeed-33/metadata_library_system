@@ -14,5 +14,6 @@ namespace LibrarySystem.DataAccess.Persistence.models
         [Required, StringLength(20)] public string Prefix { get; set; } = string.Empty;
         [Required, StringLength(255)] public string NamespaceUri { get; set; } = string.Empty;
         [Required, StringLength(100)] public string Label { get; set; } = string.Empty;
+        public ICollection<PropertyModel> Properties { get; set; } = new List<PropertyModel>();
     }
 }

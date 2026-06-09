@@ -16,6 +16,7 @@ namespace LibrarySystem.API.Controllers
             _authService = authService;
         }
 
+        [AllowAnonymous]
         [HttpPost("register")]
         public async Task<IActionResult> Register(RegisterRequest request)
         {
@@ -30,6 +31,7 @@ namespace LibrarySystem.API.Controllers
             }
         }
 
+        [AllowAnonymous]
         [HttpPost("login")]
         public async Task<IActionResult> Login(LoginRequest request)
         {
@@ -51,6 +53,7 @@ namespace LibrarySystem.API.Controllers
             await _authService.LogoutAsync();
             return Ok("Logged out successfully.");
         }
+        [AllowAnonymous]
         [HttpPost("login-google")]
         public async Task<IActionResult> LoginWithGoogle(GoogleAuthRequest request)
         {

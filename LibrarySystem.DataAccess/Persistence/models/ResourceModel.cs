@@ -20,5 +20,7 @@ namespace LibrarySystem.DataAccess.Persistence.models
 
         [ForeignKey("OwnerId")]
         public SystemUserModel? Owner { get; set; } // This is the 'Owner' definition
+
+        public ICollection<ValueModel> Values { get; set; } = new List<ValueModel>();
     }
 }

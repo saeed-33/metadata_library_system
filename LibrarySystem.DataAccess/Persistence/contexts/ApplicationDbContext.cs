@@ -50,6 +50,36 @@ namespace LibrarySystem.DataAccess.Persistence.Contexts
 
             modelBuilder.Entity<TemplatePropertyModel>().HasKey(tp => new { tp.TemplateId, tp.PropertyId });
 
+            modelBuilder.Entity<PropertyModel>()
+                .HasOne(property => property.Vocabulary)
+                .WithMany(vocabulary => vocabulary.Properties)
+                .HasForeignKey(property => property.VocabularyId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<ItemModel>()
+                .HasOne(item => item.Template)
+                .WithMany()
+                .HasForeignKey(item => item.TemplateId)
+                .OnDelete(DeleteBehavior.SetNull);
+
+            modelBuilder.Entity<MediaModel>()
+                .HasOne(media => media.Item)
+                .WithMany(item => item.Medias)
+                .HasForeignKey(media => media.ItemId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<ValueModel>()
+                .HasOne(value => value.Resource)
+                .WithMany(resource => resource.Values)
+                .HasForeignKey(value => value.ResourceId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<ValueModel>()
+                .HasOne(value => value.Property)
+                .WithMany()
+                .HasForeignKey(value => value.PropertyId)
+                .OnDelete(DeleteBehavior.Restrict);
+
             // Linking Resource to SystemUser (The Library Profile)
             modelBuilder.Entity<ResourceModel>()
                 .HasOne(r => r.Owner)
@@ -60,11 +90,11 @@ namespace LibrarySystem.DataAccess.Persistence.Contexts
             // Soft Delete Filters
             foreach (var entityType in modelBuilder.Model.GetEntityTypes())
             {
-                if (typeof(BasePersistenceModel).IsAssignableFrom(entityType.ClrType) && entityType.BaseType == null)
+                if (typeof(ISoftDelete).IsAssignableFrom(entityType.ClrType) && entityType.BaseType == null)
                 {
                     var parameter = Expression.Parameter(entityType.ClrType, "e");
                     var filter = Expression.Lambda(Expression.Equal(
-                        Expression.Property(parameter, nameof(BasePersistenceModel.IsDeleted)),
+                        Expression.Property(parameter, nameof(ISoftDelete.IsDeleted)),
                         Expression.Constant(false)), parameter);
                     modelBuilder.Entity(entityType.ClrType).HasQueryFilter(filter);
                 }
@@ -83,7 +113,7 @@ namespace LibrarySystem.DataAccess.Persistence.Contexts
                 }
 
             }
-            foreach (var entry in ChangeTracker.Entries<BasePersistenceModel>())
+            foreach (var entry in ChangeTracker.Entries<IAuditable>())
             {
                 if (entry.State == EntityState.Added) entry.Entity.CreatedAt = DateTime.UtcNow;
                 else if (entry.State == EntityState.Modified) entry.Entity.ModifiedAt = DateTime.UtcNow;

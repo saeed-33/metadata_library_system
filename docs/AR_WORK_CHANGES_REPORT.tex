@@ -1,0 +1,177 @@
+\documentclass[12pt,a4paper]{article}
+\usepackage{fontspec}
+\usepackage{polyglossia}
+\usepackage{geometry}
+\usepackage{longtable}
+\usepackage{array}
+\usepackage{hyperref}
+
+\setmainlanguage{arabic}
+\setotherlanguage{english}
+\newfontfamily\arabicfont[Script=Arabic]{Arial}
+\newfontfamily\englishfont{Arial}
+
+\geometry{top=2cm,bottom=2cm,left=2cm,right=2cm}
+
+\title{تقرير التعديلات المنفذة على مشروع نظام المكتبة}
+\author{Codex}
+\date{\today}
+
+\begin{document}
+\maketitle
+
+\section{ملخص عام}
+
+تم تنفيذ مرحلة جديدة من العمل على مشروع نظام المكتبة. شملت هذه المرحلة تحسين طبقة الوصول إلى البيانات، تقوية طبقة الواجهات البرمجية، إضافة ملفات التشغيل بالحاويات، إضافة مسار CI، وتحديث التوثيق. كما تم الحفاظ على خدمة التسجيل \textenglish{Logging Microservice} المضافة سابقا وربطها مع الواجهة الرئيسية.
+
+\section{التعديلات المنفذة}
+
+\begin{longtable}{|p{4cm}|p{5.5cm}|p{5.5cm}|}
+\hline
+\textbf{الملف أو المشروع} & \textbf{ما الذي تم تعديله} & \textbf{كيف تم التعديل} \\
+\hline
+\endfirsthead
+
+\hline
+\textbf{الملف أو المشروع} & \textbf{ما الذي تم تعديله} & \textbf{كيف تم التعديل} \\
+\hline
+\endhead
+
+\textenglish{MappedRepository.cs} &
+تحسين البحث في المستودع العام. &
+تم تعديل \textenglish{FindAsync} حتى يستخدم \textenglish{IQueryable} و \textenglish{AsNoTracking} ويترجم الشروط البسيطة من كائنات الدومين إلى كائنات قاعدة البيانات، وبذلك يتم تنفيذ الفلترة داخل قاعدة البيانات بدلا من تحميل كل السجلات إلى الذاكرة. \\
+\hline
+
+\textenglish{ResourceModel.cs} &
+إضافة علاقة القيم الوصفية. &
+تمت إضافة \textenglish{Values} حتى يستطيع \textenglish{ResourceModel} تحميل القيم المرتبطة به عند استخدام \textenglish{Include}. \\
+\hline
+
+\textenglish{VocabularyModel.cs} &
+إضافة علاقة الخصائص. &
+تمت إضافة \textenglish{Properties} حتى تصبح علاقة المفردات مع الخصائص واضحة في نموذج قاعدة البيانات. \\
+\hline
+
+\textenglish{ItemModel.cs} &
+إضافة علاقات ناقصة. &
+تمت إضافة علاقة \textenglish{Template} وعلاقة \textenglish{Medias} حتى تتوافق نماذج قاعدة البيانات مع العلاقات الموجودة في الدومين. \\
+\hline
+
+\textenglish{MdeiaModel.cs} &
+إكمال نموذج الوسائط. &
+تمت إضافة \textenglish{Item} و \textenglish{MimeType} و \textenglish{FileSize} و \textenglish{AltText}. بقي اسم الملف نفسه بحاجة إلى تصحيح لاحق لأنه مكتوب \textenglish{MdeiaModel.cs}. \\
+\hline
+
+\textenglish{ApplicationDbContext.cs} &
+تعريف العلاقات الجديدة في EF Core. &
+تمت إضافة إعدادات \textenglish{HasOne} و \textenglish{WithMany} لعلاقات الخصائص، المفردات، القيم، الموارد، العناصر، القوالب، والوسائط. \\
+\hline
+
+\textenglish{20260609072000\_AddRepositoryNavigationMappings.cs} &
+إضافة Migration جديد. &
+تم إنشاء Migration لتحديث قاعدة البيانات بالعلاقات الجديدة وحقول الوسائط الجديدة. \\
+\hline
+
+\textenglish{ExceptionHandlingMiddleware.cs} &
+توحيد معالجة الأخطاء. &
+تم إنشاء Middleware جديد يلتقط الأخطاء غير المعالجة ويرجع استجابة \textenglish{ProblemDetails} بصيغة JSON بدلا من ترك الخطأ يخرج بشكل غير منظم. \\
+\hline
+
+\textenglish{Program.cs} في مشروع \textenglish{LibrarySystem.API} &
+تقوية الأمان وتفعيل معالجة الأخطاء. &
+تمت إضافة \textenglish{Fallback Authorization Policy} حتى تكون نقاط النهاية محمية افتراضيا، وتم تفعيل \textenglish{ExceptionHandlingMiddleware}. \\
+\hline
+
+\textenglish{Program.cs} في مشروع \textenglish{LibrarySystem.API} &
+إصلاح خطأ بدء التشغيل الخاص بقاعدة بيانات Identity. &
+تمت إضافة تنفيذ \textenglish{Database.MigrateAsync} لكل من \textenglish{ApplicationDbContext} و \textenglish{CustomIdentityDbContext} قبل تنفيذ \textenglish{RoleSeeder}. هذا يمنع خطأ الأعمدة المفقودة عند تشغيل المشروع لأول مرة أو بعد إضافة Migrations جديدة. \\
+\hline
+
+\textenglish{20260609041905\_AddAuditColumnsToIdentityRoles.cs} &
+إضافة Migration لجدول الأدوار. &
+تم إنشاء Migration يضيف الأعمدة \textenglish{CreatedAt} و \textenglish{CreatedBy} و \textenglish{DeletedAt} و \textenglish{ModifiedAt} و \textenglish{ModifiedBy} إلى جدول \textenglish{AspNetRoles}. \\
+\hline
+
+\textenglish{InfrastructureServiceRegistration.cs} &
+تصحيح اسم اتصال قاعدة Identity. &
+تم دعم الاسم الصحيح \textenglish{IdentityConnection} مع الإبقاء على الاسم القديم \textenglish{IdentifyConnection} حتى لا تتعطل الإعدادات الحالية. \\
+\hline
+
+\textenglish{AuthController.cs} &
+تحديد نقاط النهاية العامة. &
+تمت إضافة \textenglish{AllowAnonymous} إلى عمليات التسجيل، تسجيل الدخول، وتسجيل الدخول بواسطة Google. بقيت عملية \textenglish{logout} محمية. \\
+\hline
+
+\textenglish{LibrarySystem.API.csproj} و \textenglish{LibrarySystem.DataAccess.csproj} و مشاريع التسجيل &
+تحديث الحزم. &
+تم تحديث حزم Microsoft و EF Core إلى إصدارات \textenglish{9.0.15}، وتحديث \textenglish{Swashbuckle.AspNetCore} إلى \textenglish{10.2.1}، و \textenglish{Serilog.AspNetCore} إلى \textenglish{9.0.0}. \\
+\hline
+
+\textenglish{LibrarySystem.API/Dockerfile} &
+تحديث Dockerfile الرئيسي. &
+تم تغيير صورة التشغيل والبناء إلى \textenglish{.NET 9}، وتم نسخ ملفات المشاريع المرجعية قبل تنفيذ \textenglish{restore}. \\
+\hline
+
+\textenglish{Logging.API/Dockerfile} &
+إضافة Dockerfile لخدمة التسجيل. &
+تم إنشاء ملف Docker مستقل لخدمة التسجيل حتى يمكن تشغيلها كخدمة منفصلة. \\
+\hline
+
+\textenglish{docker-compose.yml} &
+إضافة تشغيل موحد للخدمات. &
+تمت إضافة \textenglish{SQL Server} و \textenglish{Logging.API} و \textenglish{LibrarySystem.API} في ملف Compose واحد مع إعدادات الاتصال بين الخدمات. \\
+\hline
+
+\textenglish{.github/workflows/backend-ci.yml} &
+إضافة CI. &
+تم إنشاء Workflow ينفذ \textenglish{restore} و \textenglish{build} ويفحص الحزم الضعيفة باستخدام \textenglish{dotnet list package --vulnerable --include-transitive}. \\
+\hline
+
+\textenglish{docs} &
+تحديث التوثيق. &
+تم تحديث تقارير العمل وخطة المرحلة القادمة وتوثيق خدمة التسجيل حتى تعكس الحالة الحالية للمشروع. \\
+\hline
+
+\end{longtable}
+
+\section{التحقق}
+
+تم تنفيذ الأوامر التالية:
+
+\begin{english}
+\begin{verbatim}
+dotnet restore LibrarySystem.sln
+dotnet build LibrarySystem.sln -v:minimal --no-restore
+dotnet list LibrarySystem.sln package --vulnerable --include-transitive
+\end{verbatim}
+\end{english}
+
+نتيجة البناء:
+
+\begin{english}
+\begin{verbatim}
+Build succeeded.
+0 Warning(s)
+0 Error(s)
+\end{verbatim}
+\end{english}
+
+نتيجة فحص الثغرات:
+
+\begin{english}
+\begin{verbatim}
+No vulnerable packages found.
+\end{verbatim}
+\end{english}
+
+\section{ملاحظات مهمة}
+
+\begin{itemize}
+  \item لم يتم التحقق من \textenglish{docker compose} لأن أمر \textenglish{docker} غير موجود في هذه البيئة.
+  \item تم إيقاف عملية \textenglish{Logging.API} كانت تعمل محليا لأنها كانت تقفل ملفات البناء وتمنع تنفيذ \textenglish{dotnet build}.
+  \item علاقة \textenglish{SystemUser.Roles} ما زالت تحتاج قرارا تصميميا لأنها موجودة في قاعدة Identity وليست ممثلة بعد في \textenglish{SystemUserModel}.
+  \item ما زالت هناك أسماء ملفات بحاجة إلى تنظيف مثل \textenglish{MdeiaModel.cs} و \textenglish{UpdateMediaComman.cs} وملفات تحتوي فراغا زائدا في الاسم.
+  \item الخطوة التالية الأفضل هي إضافة اختبارات Unit و Integration لمسارات المصادقة، المستودعات، والـ CQRS handlers.
+\end{itemize}
+
+\end{document}

@@ -2,6 +2,7 @@
 using LibrarySystem.DataAccess.Persistence.Contexts;
 using LibrarySystem.DataAccess.Persistence.models;
 using LibrarySystem.DataAccess.Repositories;
+using LibrarySystem.DataAccess.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -19,8 +20,9 @@ namespace LibrarySystem.DataAccess
             var defaultConnection = configuration.GetConnectionString("DefaultConnection")
                 ?? throw new InvalidOperationException("DefaultConnection is missing.");
 
-            var identityConnection = configuration.GetConnectionString("IdentifyConnection")
-                ?? throw new InvalidOperationException("IdentifyConnection is missing.");
+            var identityConnection = configuration.GetConnectionString("IdentityConnection")
+                ?? configuration.GetConnectionString("IdentifyConnection")
+                ?? throw new InvalidOperationException("IdentityConnection is missing.");
 
             services.AddDbContext<ApplicationDbContext>(options =>
                 options.UseSqlServer(defaultConnection));
@@ -44,6 +46,11 @@ namespace LibrarySystem.DataAccess
 
             services.AddScoped<IUnitOfWork, UnitOfWork>();
             services.AddScoped<IAuthService, AuthService>(); // ← after Identity
+            services.AddHttpClient<ILoggingClient, LoggingClient>(client =>
+            {
+                var baseUrl = configuration["LoggingService:BaseUrl"] ?? "http://localhost:5113";
+                client.BaseAddress = new Uri(baseUrl);
+            });
 
             return services;
         }

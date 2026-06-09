@@ -17,10 +17,10 @@ namespace LibrarySystem.DataAccess.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "6.0.36")
+                .HasAnnotation("ProductVersion", "8.0.0")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
-            SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder, 1L, 1);
+            SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
             modelBuilder.Entity("ItemSetItems", b =>
                 {
@@ -43,7 +43,7 @@ namespace LibrarySystem.DataAccess.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
@@ -96,7 +96,7 @@ namespace LibrarySystem.DataAccess.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
@@ -131,6 +131,8 @@ namespace LibrarySystem.DataAccess.Migrations
                     b.HasIndex("OwnerId");
 
                     b.ToTable("Resources", (string)null);
+
+                    b.UseTptMappingStrategy();
                 });
 
             modelBuilder.Entity("LibrarySystem.DataAccess.Persistence.models.ResourceTemplateModel", b =>
@@ -139,7 +141,7 @@ namespace LibrarySystem.DataAccess.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
@@ -181,7 +183,7 @@ namespace LibrarySystem.DataAccess.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<string>("Bio")
                         .HasMaxLength(1000)
@@ -237,8 +239,14 @@ namespace LibrarySystem.DataAccess.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
 
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("datetime2");
+
                     b.Property<int>("DisplayOrder")
                         .HasColumnType("int");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
 
                     b.Property<bool>("IsRequired")
                         .HasColumnType("bit");
@@ -256,7 +264,7 @@ namespace LibrarySystem.DataAccess.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
@@ -319,7 +327,7 @@ namespace LibrarySystem.DataAccess.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
@@ -368,6 +376,8 @@ namespace LibrarySystem.DataAccess.Migrations
                     b.Property<int?>("TemplateId")
                         .HasColumnType("int");
 
+                    b.HasIndex("TemplateId");
+
                     b.ToTable("Items", (string)null);
                 });
 
@@ -394,18 +404,29 @@ namespace LibrarySystem.DataAccess.Migrations
                 {
                     b.HasBaseType("LibrarySystem.DataAccess.Persistence.models.ResourceModel");
 
+                    b.Property<string>("AltText")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("FileName")
                         .IsRequired()
                         .HasMaxLength(255)
                         .HasColumnType("nvarchar(255)");
 
+                    b.Property<long>("FileSize")
+                        .HasColumnType("bigint");
+
                     b.Property<int>("ItemId")
                         .HasColumnType("int");
+
+                    b.Property<string>("MimeType")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("StoragePath")
                         .IsRequired()
                         .HasMaxLength(500)
                         .HasColumnType("nvarchar(500)");
+
+                    b.HasIndex("ItemId");
 
                     b.ToTable("Media", (string)null);
                 });
@@ -428,9 +449,9 @@ namespace LibrarySystem.DataAccess.Migrations
             modelBuilder.Entity("LibrarySystem.DataAccess.Persistence.models.PropertyModel", b =>
                 {
                     b.HasOne("LibrarySystem.DataAccess.Persistence.models.VocabularyModel", "Vocabulary")
-                        .WithMany()
+                        .WithMany("Properties")
                         .HasForeignKey("VocabularyId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("Vocabulary");
@@ -470,11 +491,11 @@ namespace LibrarySystem.DataAccess.Migrations
                     b.HasOne("LibrarySystem.DataAccess.Persistence.models.PropertyModel", "Property")
                         .WithMany()
                         .HasForeignKey("PropertyId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.HasOne("LibrarySystem.DataAccess.Persistence.models.ResourceModel", "Resource")
-                        .WithMany()
+                        .WithMany("Values")
                         .HasForeignKey("ResourceId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -489,8 +510,15 @@ namespace LibrarySystem.DataAccess.Migrations
                     b.HasOne("LibrarySystem.DataAccess.Persistence.models.ResourceModel", null)
                         .WithOne()
                         .HasForeignKey("LibrarySystem.DataAccess.Persistence.models.ItemModel", "Id")
-                        .OnDelete(DeleteBehavior.ClientCascade)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.HasOne("LibrarySystem.DataAccess.Persistence.models.ResourceTemplateModel", "Template")
+                        .WithMany()
+                        .HasForeignKey("TemplateId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.Navigation("Template");
                 });
 
             modelBuilder.Entity("LibrarySystem.DataAccess.Persistence.models.ItemSetModel", b =>
@@ -498,7 +526,7 @@ namespace LibrarySystem.DataAccess.Migrations
                     b.HasOne("LibrarySystem.DataAccess.Persistence.models.ResourceModel", null)
                         .WithOne()
                         .HasForeignKey("LibrarySystem.DataAccess.Persistence.models.ItemSetModel", "Id")
-                        .OnDelete(DeleteBehavior.ClientCascade)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
 
@@ -507,8 +535,21 @@ namespace LibrarySystem.DataAccess.Migrations
                     b.HasOne("LibrarySystem.DataAccess.Persistence.models.ResourceModel", null)
                         .WithOne()
                         .HasForeignKey("LibrarySystem.DataAccess.Persistence.models.MediaModel", "Id")
-                        .OnDelete(DeleteBehavior.ClientCascade)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.HasOne("LibrarySystem.DataAccess.Persistence.models.ItemModel", "Item")
+                        .WithMany("Medias")
+                        .HasForeignKey("ItemId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Item");
+                });
+
+            modelBuilder.Entity("LibrarySystem.DataAccess.Persistence.models.ResourceModel", b =>
+                {
+                    b.Navigation("Values");
                 });
 
             modelBuilder.Entity("LibrarySystem.DataAccess.Persistence.models.ResourceTemplateModel", b =>
@@ -519,6 +560,16 @@ namespace LibrarySystem.DataAccess.Migrations
             modelBuilder.Entity("LibrarySystem.DataAccess.Persistence.models.SystemUserModel", b =>
                 {
                     b.Navigation("OwnedResources");
+                });
+
+            modelBuilder.Entity("LibrarySystem.DataAccess.Persistence.models.VocabularyModel", b =>
+                {
+                    b.Navigation("Properties");
+                });
+
+            modelBuilder.Entity("LibrarySystem.DataAccess.Persistence.models.ItemModel", b =>
+                {
+                    b.Navigation("Medias");
                 });
 #pragma warning restore 612, 618
         }

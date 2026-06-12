@@ -25,11 +25,12 @@ builder.Services.AddDbContext<LoggingDbContext>(options =>
 builder.Services.AddScoped<ILogRepository, LogRepository>();
 builder.Services.AddScoped<ILogService, LogService>();
 
+// FIXED: Cleaned up AutoMapper declaration to avoid assembly scanning conflicts
 builder.Services.AddAutoMapper(cfg =>
 {
     cfg.CreateMap<Log, LogDto>();
     cfg.CreateMap<CreateLogDto, Log>();
-}, AppDomain.CurrentDomain.GetAssemblies());
+});
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
@@ -46,7 +47,7 @@ if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
-}
+} 
 
 app.UseHttpsRedirection();
 app.UseAuthorization();

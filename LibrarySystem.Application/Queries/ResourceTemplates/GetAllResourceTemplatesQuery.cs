@@ -18,11 +18,40 @@ public class GetAllResourceTemplatesQueryHandler : IRequestHandler<GetAllResourc
         _mapper = mapper;
     }
 
-    public async Task<IEnumerable<ResourceTemplateResponse>> Handle(GetAllResourceTemplatesQuery request, CancellationToken cancellationToken)
+    public async Task<IEnumerable<ResourceTemplateResponse>> Handle(
+    GetAllResourceTemplatesQuery request, CancellationToken cancellationToken)
     {
-        // جلب كل القوالب المتاحة (غير المحذوفة)
-        var templates = await _unitOfWork.ResourceTemplates.GetAllAsync();
+        var templates = await _unitOfWork.ResourceTemplates.FindAsync(
+            t => true,
+            t => t.TemplateProperties
+        );
 
-        return _mapper.Map<IEnumerable<ResourceTemplateResponse>>(templates);
+        // Collect all property ids across all templates
+        var propertyIds = templates
+            .SelectMany(t => t.TemplateProperties)
+            .Select(tp => tp.PropertyId)
+            .Distinct()
+            .ToList();
+
+        // Single DB call to get all needed properties
+        var properties = await _unitOfWork.Properties.FindAsync(
+            p => propertyIds.Contains(p.Id)
+        );
+
+        var propertyLabels = properties.ToDictionary(p => p.Id, p => p.Label);
+
+        var response = _mapper.Map<IEnumerable<ResourceTemplateResponse>>(templates).ToList();
+
+        foreach (var template in response)
+        {
+            foreach (var prop in template.Properties)
+            {
+                prop.PropertyLabel = propertyLabels.TryGetValue(prop.PropertyId, out var label)
+                    ? label
+                    : string.Empty;
+            }
+        }
+
+        return response;
     }
 }

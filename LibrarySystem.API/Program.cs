@@ -11,7 +11,7 @@ using LibrarySystem.DataAccess.Persistence.models;
 using LibrarySystem.DataAccess.Persistence.Seeds;
 using LibrarySystem.API.Middleware;
 using Microsoft.EntityFrameworkCore;
-
+using Microsoft.OpenApi.Models; // <-- ADD THIS LINE HERE
 
 var builder = WebApplication.CreateBuilder(args);
 Log.Logger = new LoggerConfiguration()
@@ -43,11 +43,47 @@ builder.Services.AddAuthentication(options =>
             Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]
                 ?? throw new InvalidOperationException("Jwt:Key is missing.")))
     };
+
+    // Add this to print the definitive answer to your console window
+    options.Events = new JwtBearerEvents
+    {
+        OnAuthenticationFailed = context =>
+        {
+            Log.Error("[JWT Auth Error] Failed validating token. Reason: {Error}", context.Exception.Message);
+            return Task.CompletedTask;
+        }
+    };
 });
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+builder.Services.AddSwaggerGen(options =>
+{
+    options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+    {
+        Name = "Authorization",
+        Type = SecuritySchemeType.Http,
+        Scheme = "Bearer",
+        BearerFormat = "JWT",
+        In = ParameterLocation.Header,
+        Description = "Please enter a valid token into the field below. Format: eyJhbG..."
+    });
+
+    options.AddSecurityRequirement(new OpenApiSecurityRequirement
+    {
+        {
+            new OpenApiSecurityScheme
+            {
+                Reference = new OpenApiReference
+                {
+                    Type = ReferenceType.SecurityScheme,
+                    Id = "Bearer"
+                }
+            },
+            new string[] {}
+        }
+    });
+});
 builder.Services.AddAuthorization(options =>
 {
     options.FallbackPolicy = new AuthorizationPolicyBuilder()

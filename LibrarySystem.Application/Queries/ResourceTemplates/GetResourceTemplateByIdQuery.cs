@@ -18,15 +18,37 @@ public class GetResourceTemplateByIdQueryHandler : IRequestHandler<GetResourceTe
         _mapper = mapper;
     }
 
-    public async Task<ResourceTemplateResponse?> Handle(GetResourceTemplateByIdQuery request, CancellationToken cancellationToken)
+    public async Task<ResourceTemplateResponse?> Handle(
+    GetResourceTemplateByIdQuery request, CancellationToken cancellationToken)
     {
-        // نستخدم FindAsync مع Include لجلب الـ TemplateProperties والـ Property نفسها
         var templates = await _unitOfWork.ResourceTemplates.FindAsync(
             t => t.Id == request.Id,
-            t => t.TemplateProperties // جلب جدول الربط
+            t => t.TemplateProperties
         );
 
         var template = templates.FirstOrDefault();
-        return _mapper.Map<ResourceTemplateResponse>(template);
+        if (template == null) return null;
+
+        // Get all property ids from the template
+        var propertyIds = template.TemplateProperties.Select(tp => tp.PropertyId).ToList();
+
+        // Fetch the actual Property entities to get their labels
+        var properties = await _unitOfWork.Properties.FindAsync(
+            p => propertyIds.Contains(p.Id)
+        );
+
+        // Build a lookup dictionary: propertyId → label
+        var propertyLabels = properties.ToDictionary(p => p.Id, p => p.Label);
+
+        // Map to response and inject labels manually
+        var response = _mapper.Map<ResourceTemplateResponse>(template);
+        foreach (var prop in response.Properties)
+        {
+            prop.PropertyLabel = propertyLabels.TryGetValue(prop.PropertyId, out var label)
+                ? label
+                : string.Empty;
+        }
+
+        return response;
     }
 }

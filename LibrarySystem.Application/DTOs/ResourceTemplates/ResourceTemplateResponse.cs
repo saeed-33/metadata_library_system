@@ -1,22 +1,17 @@
 ﻿namespace LibrarySystem.Application.DTOs.ResourceTemplates;
 
-public record ResourceTemplateResponse(
-    int Id,
-    string Label,
-    string? Description,
-    // قائمة الخصائص التي يحتوي عليها هذا القالب
-    List<TemplatePropertyResponse> Properties
-);
+public class ResourceTemplateResponse
+{
+    public int Id { get; set; }
+    public string Label { get; set; } = string.Empty;
+    public string? Description { get; set; }
+    public List<TemplatePropertyResponse> Properties { get; set; } = new();
+}
 
-// DTO فرعي لتمثيل الخاصية داخل القالب
-public record TemplatePropertyResponse(
-    int PropertyId,
-    string PropertyLabel,
-    bool IsRequired,
-    int DisplayOrder
-);
-
-/*القالب بحد ذاته بسيط(
- * Label, Description)،
- * ولكن عند عرضه، المستخدم يحتاج لرؤية قائمة الخصائص المرتبطة بهذا القالب(التي تأتي من جدول 
- * TemplateProperty).*/
+public class TemplatePropertyResponse
+{
+    public int PropertyId { get; set; }
+    public string PropertyLabel { get; set; } = string.Empty; // needs setter
+    public bool IsRequired { get; set; }
+    public int DisplayOrder { get; set; }
+}

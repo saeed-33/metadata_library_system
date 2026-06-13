@@ -2,7 +2,9 @@ using LibrarySystem.Application.Commands.Media;
 using LibrarySystem.Application.Queries.Media;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
-
+using System.Text.Json;
+using Microsoft.AspNetCore.Hosting;
+using LibrarySystem.Application.Commands.Items;
 namespace LibrarySystem.API.Controllers;
 
 [ApiController]
@@ -10,10 +12,11 @@ namespace LibrarySystem.API.Controllers;
 public class MediaController : ControllerBase
 {
     private readonly IMediator _mediator;
-
-    public MediaController(IMediator mediator)
+    private readonly IWebHostEnvironment _environment;
+    public MediaController(IMediator mediator, IWebHostEnvironment environment)
     {
         _mediator = mediator;
+        _environment = environment;
     }
 
     [HttpGet("by-item/{itemId:int}")]
@@ -53,4 +56,60 @@ public class MediaController : ControllerBase
         var deleted = await _mediator.Send(new DeleteMediaCommand(id));
         return deleted ? NoContent() : NotFound();
     }
+
+    [HttpPost("upload-with-metadata")]
+    public async Task<IActionResult> UploadWithMetadata([FromForm] UploadMediaRequestDto request)
+    {
+        if (request.File == null || request.File.Length == 0)
+            return BadRequest("No file selected for upload.");
+
+        var webRootPath = _environment.WebRootPath ?? Path.Combine(_environment.ContentRootPath, "wwwroot");
+        var uploadsFolder = Path.Combine(webRootPath, "uploads");
+
+        if (!Directory.Exists(uploadsFolder))
+            Directory.CreateDirectory(uploadsFolder);
+
+        var uniqueFileName = $"{Guid.NewGuid()}_{request.File.FileName}";
+        var filePath = Path.Combine(uploadsFolder, uniqueFileName);
+
+        using (var stream = new FileStream(filePath, FileMode.Create))
+        {
+            await request.File.CopyToAsync(stream);
+        }
+
+        var storagePath = $"/uploads/{uniqueFileName}";
+
+        try
+        {
+            var jsonOptions = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
+            var mediaValues = string.IsNullOrEmpty(request.ValuesJson)
+                ? new List<CreateValueRequest>()
+                : JsonSerializer.Deserialize<List<CreateValueRequest>>(request.ValuesJson, jsonOptions);
+
+            var command = new CreateMediaCommand(
+                request.ItemId,
+                storagePath,
+                request.File.FileName,
+                mediaValues
+            );
+
+            var id = await _mediator.Send(command);
+
+            return CreatedAtAction(nameof(GetById), new { id }, new { id, storagePath });
+        }
+        catch (Exception)
+        {
+            if (System.IO.File.Exists(filePath))
+                System.IO.File.Delete(filePath);
+
+            return StatusCode(500, "An error occurred while saving data; file upload was rolled back.");
+        }
+    }
+}
+
+    public class UploadMediaRequestDto
+{
+    public IFormFile File { get; set; }
+    public int ItemId { get; set; }
+    public string ValuesJson { get; set; }
 }

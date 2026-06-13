@@ -100,6 +100,14 @@ builder.Services.AddAuthorization(options =>
 {
     options.FallbackPolicy = new AuthorizationPolicyBuilder()
         .RequireAuthenticatedUser()
+        .RequireAssertion(context =>
+        {
+            if (context.Resource is HttpContext httpContext && httpContext.Request.Method == "OPTIONS")
+            {
+                return true;
+            }
+            return context.User.Identity?.IsAuthenticated ?? false;
+        })
         .Build();
 });
 
@@ -121,6 +129,9 @@ using (var scope = app.Services.CreateScope())
     var roleManager = scope.ServiceProvider
         .GetRequiredService<RoleManager<AppRoleModel>>();
     await RoleSeeder.SeedRolesAsync(roleManager);
+
+    Log.Information("Seeding development metadata.");
+    await RoleSeeder.MetadataSeeder.SeedAsync(applicationDbContext);
 }
 
 if (!app.Environment.IsDevelopment())
@@ -134,7 +145,6 @@ else
 }
 
 app.UseHttpsRedirection();
-app.UseMiddleware<ExceptionHandlingMiddleware>();
 app.UseStaticFiles();
 app.UseRouting();
 

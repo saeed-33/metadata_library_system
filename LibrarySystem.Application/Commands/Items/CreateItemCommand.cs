@@ -35,6 +35,10 @@ public class CreateItemCommandHandler : IRequestHandler<CreateItemCommand, int>
 
         await _unitOfWork.Items.AddAsync(item);
 
+        // Save item first so it gets a real Id from the database
+        await _unitOfWork.SaveChangesAsync();
+
+        // Now item.Id is populated — safe to use as FK for Values
         foreach (var vReq in request.Values)
         {
             var value = new Value
@@ -43,9 +47,9 @@ public class CreateItemCommandHandler : IRequestHandler<CreateItemCommand, int>
                 ValueText = vReq.ValueText,
                 ValueUri = vReq.ValueUri,
                 ValueResourceId = vReq.ValueResourceId,
-                Type = vReq.Type, // هنا نحدد النوع (نص، رابط، أو مورد)
+                Type = vReq.Type,
                 Language = vReq.Language,
-                Resource = item
+                ResourceId = item.Id  // ← use Id directly, not navigation property
             };
             await _unitOfWork.Values.AddAsync(value);
         }

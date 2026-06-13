@@ -1,11 +1,11 @@
 ﻿namespace LibrarySystem.Application.DTOs.Properties;
 
-// استخدمنا record لأنه أخف في الذاكرة ومخصص لنقل البيانات فقط
-public record PropertyResponse(
-    int Id,
-    int VocabularyId,
-    string VocabularyPrefix, // مضاف لكي يظهر للمستخدم (مثلاً: "dc:Title")
-    string LocalName,        // الاسم البرمجي (مثلاً: Title)
-    string Label,            // الاسم المعروض (مثلاً: العنوان الرئيسي)
-    string TermUri           // الرابط العالمي للخاصية
-);
+public class PropertyResponse
+{
+    public int Id { get; set; }
+    public int VocabularyId { get; set; }
+    public string VocabularyPrefix { get; set; } = string.Empty;
+    public string LocalName { get; set; } = string.Empty;
+    public string Label { get; set; } = string.Empty;
+    public string TermUri { get; set; } = string.Empty;
+}

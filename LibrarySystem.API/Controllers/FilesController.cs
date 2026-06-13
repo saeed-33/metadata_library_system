@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 
-namespace LibrarySystem.Web.Controllers
+namespace LibrarySystem.API.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
@@ -16,27 +16,27 @@ namespace LibrarySystem.Web.Controllers
         [HttpPost("upload")]
         public async Task<IActionResult> Upload(IFormFile file)
         {
-            // 1. التحقق من وجود الملف
+            // 1. Check file exists
             if (file == null || file.Length == 0)
                 return BadRequest("لم يتم اختيار ملف للرفع.");
 
-            // 2. تحديد مسار التخزين (مجلد wwwroot/uploads)
-            var uploadsFolder = Path.Combine(_environment.WebRootPath, "uploads");
+            // 2. Use ContentRootPath instead of WebRootPath
+            // WebRootPath is null in API projects without wwwroot
+            var uploadsFolder = Path.Combine(_environment.ContentRootPath, "uploads");
             if (!Directory.Exists(uploadsFolder))
                 Directory.CreateDirectory(uploadsFolder);
 
-            // 3. توليد اسم فريد للملف لمنع التكرار (Unique ID + Extension)
+            // 3. Generate unique file name to prevent duplicates
             var uniqueFileName = $"{Guid.NewGuid()}_{file.FileName}";
             var filePath = Path.Combine(uploadsFolder, uniqueFileName);
 
-            // 4. حفظ الملف فعلياً على القرص
+            // 4. Save file to disk
             using (var stream = new FileStream(filePath, FileMode.Create))
             {
                 await file.CopyToAsync(stream);
             }
 
-            // 5. إرجاع المسار النسبي الذي سيستخدمه الـ CreateMediaCommand لاحقاً
-            // المسار سيكون مثل: /uploads/GUID_filename.jpg
+            // 5. Return relative path for CreateMediaCommand
             var storagePath = $"/uploads/{uniqueFileName}";
 
             return Ok(new

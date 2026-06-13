@@ -22,6 +22,11 @@ namespace LibrarySystem.Application.Interfaces
 
         IGenericRepository<SystemUser> SystemUsers { get; }
 
+        Task<bool> RestoreOrUpdateTemplatePropertyAsync(
+     int templateId, int propertyId,
+     bool isRequired, int displayOrder, string? alternateLabel);
+
+
         Task<int> SaveChangesAsync();
     }
 }

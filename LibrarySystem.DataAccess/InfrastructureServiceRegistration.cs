@@ -23,7 +23,8 @@ namespace LibrarySystem.DataAccess
             var identityConnection = configuration.GetConnectionString("IdentityConnection")
                 ?? configuration.GetConnectionString("IdentifyConnection")
                 ?? throw new InvalidOperationException("IdentityConnection is missing.");
-
+           
+            services.AddScoped<IIdentityService, IdentityService>();
             services.AddDbContext<ApplicationDbContext>(options =>
                 options.UseSqlServer(defaultConnection));
 

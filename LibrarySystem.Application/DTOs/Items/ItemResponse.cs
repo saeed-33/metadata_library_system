@@ -1,17 +1,19 @@
 ﻿namespace LibrarySystem.Application.DTOs.Items;
 
-public record ItemResponse(
-    int Id,
-    string Type,
-    int? TemplateId,
-    int? OwnerId,
-    string? OwnerName,
-    List<ItemValueResponse> MetadataValues // قائمة القيم الوصفية
-);
+public class ItemResponse
+{
+    public int Id { get; set; }
+    public string Type { get; set; } = string.Empty;
+    public int? TemplateId { get; set; }
+    public int? OwnerId { get; set; }
+    public string? OwnerName { get; set; }
+    public List<ItemValueResponse> MetadataValues { get; set; } = new();
+}
 
-public record ItemValueResponse(
-    int PropertyId,
-    string PropertyLabel,
-    string? ValueText,
-    string? Language
-);
+public class ItemValueResponse
+{
+    public int PropertyId { get; set; }
+    public string PropertyLabel { get; set; } = string.Empty;
+    public string? ValueText { get; set; }
+    public string? Language { get; set; }
+}

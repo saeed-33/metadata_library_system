@@ -1,4 +1,4 @@
-using AutoMapper;
+﻿using AutoMapper;
 using LibrarySystem.DataAccess.Persistence.models;
 using LibrarySystem.Domain.Entities;
 
@@ -9,18 +9,44 @@ namespace LibrarySystem.DataAccess.Mappings
         public PersistenceMappingProfile()
         {
             CreateMap<Vocabulary, VocabularyModel>().ReverseMap();
+
             CreateMap<Property, PropertyModel>().ReverseMap();
+
             CreateMap<ResourceTemplate, ResourceTemplateModel>().ReverseMap();
+
             CreateMap<TemplateProperty, TemplatePropertyModel>().ReverseMap();
-            CreateMap<Resource, ResourceModel>().ReverseMap();
+
+            CreateMap<Resource, ResourceModel>()
+                .ReverseMap()
+                .ForMember(dest => dest.Values, opt => opt.Ignore());
+
             CreateMap<Item, ItemModel>()
                 .ForMember(dest => dest.ItemSets, opt => opt.Ignore())
                 .ReverseMap()
-                .ForMember(dest => dest.ItemSets, opt => opt.Ignore());
-            CreateMap<Media, MediaModel>().ReverseMap();
-            CreateMap<ItemSet, ItemSetModel>().ReverseMap();
-            CreateMap<Value, ValueModel>().ReverseMap();
-            CreateMap<SystemUser, SystemUserModel>().ReverseMap();
+                .ForMember(dest => dest.ItemSets, opt => opt.Ignore())
+                .ForMember(dest => dest.Values, opt => opt.Ignore());
+
+            CreateMap<Media, MediaModel>()
+                .ReverseMap()
+                .ForMember(dest => dest.Values, opt => opt.Ignore());
+
+            CreateMap<ItemSet, ItemSetModel>()
+                .ReverseMap()
+                .ForMember(dest => dest.Values, opt => opt.Ignore())
+                .ForMember(dest => dest.Items, opt => opt.Ignore());
+            
+            CreateMap<Value, ValueModel>()
+                .ForMember(dest => dest.Resource, opt => opt.Ignore())
+                .ReverseMap()
+                .ForMember(dest => dest.Resource, opt => opt.Ignore());
+
+            // SystemUser has Roles navigation property but SystemUserModel does not
+            // Ignore it in both directions
+            CreateMap<SystemUser, SystemUserModel>()
+                .ForMember(dest => dest.OwnedResources, opt => opt.Ignore())
+                .ReverseMap()
+                .ForMember(dest => dest.Roles, opt => opt.Ignore())
+                .ForMember(dest => dest.OwnedResources, opt => opt.Ignore());
         }
     }
 }

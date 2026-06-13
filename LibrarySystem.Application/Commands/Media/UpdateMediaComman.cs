@@ -17,24 +17,34 @@ public class UpdateMediaCommandHandler : IRequestHandler<UpdateMediaCommand, boo
     private readonly IUnitOfWork _unitOfWork;
     public UpdateMediaCommandHandler(IUnitOfWork unitOfWork) => _unitOfWork = unitOfWork;
 
+
     public async Task<bool> Handle(UpdateMediaCommand request, CancellationToken cancellationToken)
     {
-        var media = (await _unitOfWork.Medias.FindAsync(m => m.Id == request.Id, m => m.Values)).FirstOrDefault();
+        var media = (await _unitOfWork.Medias.FindAsync(m => m.Id == request.Id)).FirstOrDefault();
         if (media == null) return false;
 
         media.StoragePath = request.StoragePath;
         media.FileName = request.FileName;
 
-        // تحديث القيم (نتبع نفس منطق الـ Item: مسح القديم وإضافة الجديد لضمان التكامل)
-        var oldValues = await _unitOfWork.Values.FindAsync(v => v.ResourceId == media.Id);
-        foreach (var v in oldValues) _unitOfWork.Values.Delete(v);
+        // Save media update first
+        _unitOfWork.Medias.Update(media);
 
+        // Delete old values
+        var oldValues = await _unitOfWork.Values.FindAsync(v => v.ResourceId == media.Id);
+        foreach (var v in oldValues)
+            _unitOfWork.Values.Delete(v);
+
+        // Add new values with all fields populated
         foreach (var vReq in request.Values)
         {
             await _unitOfWork.Values.AddAsync(new Value
             {
                 PropertyId = vReq.PropertyId,
                 ValueText = vReq.ValueText,
+                ValueUri = vReq.ValueUri,
+                ValueResourceId = vReq.ValueResourceId,
+                Type = vReq.Type,     // ← was missing
+                Language = vReq.Language, // ← was missing
                 ResourceId = media.Id
             });
         }

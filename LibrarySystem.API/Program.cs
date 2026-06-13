@@ -1,4 +1,4 @@
-using Microsoft.AspNetCore.Identity;
+﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.IdentityModel.Tokens;
@@ -11,29 +11,28 @@ using LibrarySystem.DataAccess.Persistence.models;
 using LibrarySystem.DataAccess.Persistence.Seeds;
 using LibrarySystem.API.Middleware;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.OpenApi.Models; // <-- ADD THIS LINE HERE
+using Microsoft.OpenApi.Models;
 
 var builder = WebApplication.CreateBuilder(args);
+
 Log.Logger = new LoggerConfiguration()
     .ReadFrom.Configuration(builder.Configuration)
     .WriteTo.Console()
     .CreateLogger();
-
 builder.Host.UseSerilog();
 
 builder.Services.AddApplicationServices();
 builder.Services.AddInfrastructureServices(builder.Configuration);
 
+// ── CORS ───────────────────────────────────────────────────────────
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("AllowReactApp",
-        policy =>
-        {
-            policy.WithOrigins("http://localhost:5173")
-                  .AllowAnyHeader()
-                  .AllowAnyMethod()
-                  .AllowCredentials();
-        });
+    options.AddPolicy("AllowReactApp", policy =>
+    {
+        policy.WithOrigins("http://localhost:5173") // React dev server
+              .AllowAnyHeader()
+              .AllowAnyMethod();
+    });
 });
 
 builder.Services.AddAuthentication(options =>
@@ -56,12 +55,12 @@ builder.Services.AddAuthentication(options =>
                 ?? throw new InvalidOperationException("Jwt:Key is missing.")))
     };
 
-    // Add this to print the definitive answer to your console window
     options.Events = new JwtBearerEvents
     {
         OnAuthenticationFailed = context =>
         {
-            Log.Error("[JWT Auth Error] Failed validating token. Reason: {Error}", context.Exception.Message);
+            Log.Error("[JWT Auth Error] Failed validating token. Reason: {Error}",
+                context.Exception.Message);
             return Task.CompletedTask;
         }
     };
@@ -78,7 +77,7 @@ builder.Services.AddSwaggerGen(options =>
         Scheme = "Bearer",
         BearerFormat = "JWT",
         In = ParameterLocation.Header,
-        Description = "Please enter a valid token into the field below. Format: eyJhbG..."
+        Description = "Please enter a valid token. Format: eyJhbG..."
     });
 
     options.AddSecurityRequirement(new OpenApiSecurityRequirement
@@ -89,7 +88,7 @@ builder.Services.AddSwaggerGen(options =>
                 Reference = new OpenApiReference
                 {
                     Type = ReferenceType.SecurityScheme,
-                    Id = "Bearer"
+                    Id   = "Bearer"
                 }
             },
             new string[] {}
@@ -117,15 +116,18 @@ var app = builder.Build();
 using (var scope = app.Services.CreateScope())
 {
     Log.Information("Applying application database migrations.");
-    var applicationDbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+    var applicationDbContext = scope.ServiceProvider
+        .GetRequiredService<ApplicationDbContext>();
     await applicationDbContext.Database.MigrateAsync();
 
     Log.Information("Applying identity database migrations.");
-    var identityDbContext = scope.ServiceProvider.GetRequiredService<CustomIdentityDbContext>();
+    var identityDbContext = scope.ServiceProvider
+        .GetRequiredService<CustomIdentityDbContext>();
     await identityDbContext.Database.MigrateAsync();
 
     Log.Information("Seeding identity roles.");
-    var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<AppRoleModel>>();
+    var roleManager = scope.ServiceProvider
+        .GetRequiredService<RoleManager<AppRoleModel>>();
     await RoleSeeder.SeedRolesAsync(roleManager);
 
     Log.Information("Seeding development metadata.");
@@ -146,9 +148,8 @@ app.UseHttpsRedirection();
 app.UseStaticFiles();
 app.UseRouting();
 
-app.UseCors("AllowReactApp");
-
-app.UseMiddleware<ExceptionHandlingMiddleware>();
+// ── Order matters here ─────────────────────────────────────────────
+app.UseCors("AllowReactApp");        // ← must come before Authentication
 app.UseAuthentication();
 app.UseMiddleware<RequestLoggingMiddleware>();
 app.UseAuthorization();

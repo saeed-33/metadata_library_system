@@ -1,5 +1,4 @@
-﻿using AutoMapper;
-using LibrarySystem.Application.DTOs.Users;
+﻿using LibrarySystem.Application.DTOs.Users;
 using LibrarySystem.Application.Interfaces;
 using MediatR;
 
@@ -10,22 +9,33 @@ public record GetSystemUserByIdQuery(int Id) : IRequest<UserResponse?>;
 public class GetSystemUserByIdQueryHandler : IRequestHandler<GetSystemUserByIdQuery, UserResponse?>
 {
     private readonly IUnitOfWork _unitOfWork;
-    private readonly IMapper _mapper;
+    private readonly IIdentityService _identityService;
 
-    public GetSystemUserByIdQueryHandler(IUnitOfWork unitOfWork, IMapper mapper)
+    public GetSystemUserByIdQueryHandler(
+        IUnitOfWork unitOfWork,
+        IIdentityService identityService)
     {
         _unitOfWork = unitOfWork;
-        _mapper = mapper;
+        _identityService = identityService;
     }
 
-    public async Task<UserResponse?> Handle(GetSystemUserByIdQuery request, CancellationToken cancellationToken)
+    public async Task<UserResponse?> Handle(
+        GetSystemUserByIdQuery request,
+        CancellationToken cancellationToken)
     {
-        var users = await _unitOfWork.SystemUsers.FindAsync(
-            u => u.Id == request.Id,
-            u => u.Roles // جلب قائمة الأدوار
-        );
+        var user = await _unitOfWork.SystemUsers.GetByIdAsync(request.Id);
+        if (user == null) return null;
 
-        var user = users.FirstOrDefault();
-        return user == null ? null : _mapper.Map<UserResponse>(user);
+        var roles = await _identityService
+            .GetRolesByExternalIdAsync(user.ExternalId);
+
+        return new UserResponse(
+            user.Id,
+            user.ExternalId,
+            user.FullName,
+            user.Bio,
+            user.ProfilePicturePath,
+            roles
+        );
     }
 }

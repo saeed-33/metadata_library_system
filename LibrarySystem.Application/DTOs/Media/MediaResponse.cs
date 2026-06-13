@@ -2,10 +2,11 @@
 
 namespace LibrarySystem.Application.DTOs.Media;
 
-public record MediaResponse(
-    int Id,
-    int ItemId,               // المورد الأب (الكتاب التابع له)
-    string StoragePath,       // مسار الملف على الخادم أو السحابة
-    string FileName,          // اسم الملف الأصلي
-    List<ItemValueResponse> MetadataValues // القيم الوصفية للملف نفسه
-);
+public class MediaResponse
+{
+    public int Id { get; set; }
+    public int ItemId { get; set; }
+    public string StoragePath { get; set; } = string.Empty;
+    public string FileName { get; set; } = string.Empty;
+    public List<ItemValueResponse> MetadataValues { get; set; } = new();
+}

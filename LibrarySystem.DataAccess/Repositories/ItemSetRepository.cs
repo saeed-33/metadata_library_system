@@ -22,13 +22,37 @@ public class ItemSetRepository : IItemSetRepository, ISyncGeneratedKeys
     public async Task<ItemSet?> GetByIdAsync(int id)
     {
         var model = await ItemSetQuery().FirstOrDefaultAsync(itemSet => itemSet.Id == id);
-        return model == null ? null : _mapper.Map<ItemSet>(model);
+        if (model == null) return null;
+
+        var itemSet = _mapper.Map<ItemSet>(model);
+
+        // Inject items manually since mapping ignores them
+        foreach (var itemModel in model.Items)
+        {
+            var item = _mapper.Map<Item>(itemModel);
+            itemSet.Items.Add(item);
+        }
+
+        return itemSet;
     }
 
     public async Task<IEnumerable<ItemSet>> GetAllAsync()
     {
         var models = await ItemSetQuery().ToListAsync();
-        return _mapper.Map<IEnumerable<ItemSet>>(models);
+
+        return models.Select(model =>
+        {
+            var itemSet = _mapper.Map<ItemSet>(model);
+
+            // Inject items manually since mapping ignores them
+            foreach (var itemModel in model.Items)
+            {
+                var item = _mapper.Map<Item>(itemModel);
+                itemSet.Items.Add(item);
+            }
+
+            return itemSet;
+        }).ToList();
     }
 
     public async Task AddAsync(ItemSet itemSet)

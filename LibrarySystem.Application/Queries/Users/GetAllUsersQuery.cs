@@ -1,4 +1,3 @@
-using AutoMapper;
 using LibrarySystem.Application.DTOs.Users;
 using LibrarySystem.Application.Interfaces;
 using MediatR;
@@ -10,22 +9,38 @@ public record GetAllUsersQuery() : IRequest<IEnumerable<UserResponse>>;
 public class GetAllUsersQueryHandler : IRequestHandler<GetAllUsersQuery, IEnumerable<UserResponse>>
 {
     private readonly IUnitOfWork _unitOfWork;
-    private readonly IMapper _mapper;
+    private readonly IIdentityService _identityService;
 
-    public GetAllUsersQueryHandler(IUnitOfWork unitOfWork, IMapper mapper)
+    public GetAllUsersQueryHandler(
+        IUnitOfWork unitOfWork,
+        IIdentityService identityService)
     {
         _unitOfWork = unitOfWork;
-        _mapper = mapper;
+        _identityService = identityService;
     }
 
-    public async Task<IEnumerable<UserResponse>> Handle(GetAllUsersQuery request, CancellationToken cancellationToken)
+    public async Task<IEnumerable<UserResponse>> Handle(
+        GetAllUsersQuery request,
+        CancellationToken cancellationToken)
     {
-        // Include Roles so UserResponse.Roles gets populated
-        var users = await _unitOfWork.SystemUsers.FindAsync(
-            u => true,
-            u => u.Roles
-        );
+        var users = await _unitOfWork.SystemUsers.GetAllAsync();
+        var result = new List<UserResponse>();
 
-        return _mapper.Map<IEnumerable<UserResponse>>(users);
+        foreach (var user in users)
+        {
+            var roles = await _identityService
+                .GetRolesByExternalIdAsync(user.ExternalId);
+
+            result.Add(new UserResponse(
+                user.Id,
+                user.ExternalId,
+                user.FullName,
+                user.Bio,
+                user.ProfilePicturePath,
+                roles
+            ));
+        }
+
+        return result;
     }
 }

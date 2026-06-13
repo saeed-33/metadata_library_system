@@ -9,7 +9,7 @@ public record CreateMediaCommand(
     int ItemId,
     string StoragePath,
     string FileName,
-    List<CreateValueRequest> Values // قيم وصفية للملف
+    List<CreateValueRequest> Values
 ) : IRequest<int>;
 
 public class CreateMediaCommandHandler : IRequestHandler<CreateMediaCommand, int>
@@ -20,7 +20,7 @@ public class CreateMediaCommandHandler : IRequestHandler<CreateMediaCommand, int
 
     public async Task<int> Handle(CreateMediaCommand request, CancellationToken cancellationToken)
     {
-        // 1. إنشاء كائن الـ Media
+        // 1. Create media object
         var media = new LibrarySystem.Domain.Entities.Media
         {
             ItemId = request.ItemId,
@@ -30,16 +30,21 @@ public class CreateMediaCommandHandler : IRequestHandler<CreateMediaCommand, int
 
         await _unitOfWork.Medias.AddAsync(media);
 
-        // 2. إضافة القيم الوصفية المرتبطة بالملف
+        // 2. Save media first to get a real Id from the database
+        await _unitOfWork.SaveChangesAsync();
+
+        // 3. Now media.Id is populated — safe to use as FK for Values
         foreach (var vReq in request.Values)
         {
             var value = new Value
             {
                 PropertyId = vReq.PropertyId,
                 ValueText = vReq.ValueText,
+                ValueUri = vReq.ValueUri,
+                ValueResourceId = vReq.ValueResourceId,
                 Type = vReq.Type,
                 Language = vReq.Language,
-                Resource = media // ربط القيمة بملف الميديا
+                ResourceId = media.Id  // ← use Id directly, not navigation property
             };
             await _unitOfWork.Values.AddAsync(value);
         }

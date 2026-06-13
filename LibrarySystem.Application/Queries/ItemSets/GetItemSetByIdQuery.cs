@@ -18,9 +18,23 @@ public class GetItemSetByIdQueryHandler : IRequestHandler<GetItemSetByIdQuery, I
         _mapper = mapper;
     }
 
-    public async Task<ItemSetResponse?> Handle(GetItemSetByIdQuery request, CancellationToken cancellationToken)
+    public async Task<ItemSetResponse?> Handle(
+        GetItemSetByIdQuery request, CancellationToken cancellationToken)
     {
         var itemSet = await _unitOfWork.ItemSets.GetByIdAsync(request.Id);
-        return itemSet == null ? null : _mapper.Map<ItemSetResponse>(itemSet);
+        if (itemSet == null) return null;
+
+        var response = _mapper.Map<ItemSetResponse>(itemSet);
+
+        // Inject items manually since mapping ignores them
+        response.Items = itemSet.Items.Select(item => new ItemSetItemResponse
+        {
+            Id = item.Id,
+            Type = item.Type,
+            TemplateId = item.TemplateId,
+            OwnerId = item.OwnerId
+        }).ToList();
+
+        return response;
     }
 }

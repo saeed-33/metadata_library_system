@@ -3,6 +3,7 @@ using LibrarySystem.Application.DTOs.Auth;
 using LibrarySystem.Application.Interfaces;
 using LibrarySystem.DataAccess.Persistence.models;
 using LibrarySystem.Domain.common;
+using LibrarySystem.Domain.Entities;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
@@ -17,15 +18,18 @@ namespace LibrarySystem.DataAccess.Services
         private readonly UserManager<AppUserModel> _userManager;
         private readonly SignInManager<AppUserModel> _signInManager;
         private readonly IConfiguration _configuration;
+        private readonly IUnitOfWork _unitOfWork; // ← added
 
         public AuthService(
             UserManager<AppUserModel> userManager,
             SignInManager<AppUserModel> signInManager,
-            IConfiguration configuration)
+            IConfiguration configuration,
+            IUnitOfWork unitOfWork) // ← added
         {
             _userManager = userManager;
             _signInManager = signInManager;
             _configuration = configuration;
+            _unitOfWork = unitOfWork; // ← added
         }
 
         public async Task<AuthResponse> RegisterAsync(RegisterRequest request)
@@ -48,6 +52,19 @@ namespace LibrarySystem.DataAccess.Services
             }
 
             await _userManager.AddToRoleAsync(user, SystemRoles.User);
+
+            // 1. Create SystemUser profile linked to the Identity user
+            var systemUser = new SystemUser
+            {
+                ExternalId = user.Id,
+                FullName = request.FullName
+            };
+            await _unitOfWork.SystemUsers.AddAsync(systemUser);
+            await _unitOfWork.SaveChangesAsync();
+
+            // 2. Link Identity user back to the SystemUser profile
+            user.SystemUserId = systemUser.Id;
+            await _userManager.UpdateAsync(user);
 
             var token = await GenerateJwtTokenAsync(user);
             return new AuthResponse(user.UserName!, user.Email!, token);
@@ -75,21 +92,16 @@ namespace LibrarySystem.DataAccess.Services
 
         public async Task<AuthResponse> LoginWithGoogleAsync(string idToken)
         {
-            // 1. Ask Google to verify the token and give us the user's info
             var payload = await VerifyGoogleTokenAsync(idToken);
 
-            // 2. Check if this Google user already has an account in our system
             var user = await _userManager.FindByEmailAsync(payload.Email);
 
             if (user == null)
             {
-                // 3. First time login with Google — create an account automatically
                 user = new AppUserModel
                 {
-                    // Google email is used as username since they have no password
                     UserName = payload.Email,
                     Email = payload.Email,
-                    // Email is already verified by Google — no need for our own verification
                     EmailConfirmed = true
                 };
 
@@ -100,11 +112,21 @@ namespace LibrarySystem.DataAccess.Services
                     throw new InvalidOperationException(errors);
                 }
 
-                // 4. Assign default role — same as normal registration
                 await _userManager.AddToRoleAsync(user, SystemRoles.User);
+
+                // Create SystemUser profile for Google users too
+                var systemUser = new SystemUser
+                {
+                    ExternalId = user.Id,
+                    FullName = payload.Name ?? payload.Email
+                };
+                await _unitOfWork.SystemUsers.AddAsync(systemUser);
+                await _unitOfWork.SaveChangesAsync();
+
+                user.SystemUserId = systemUser.Id;
+                await _userManager.UpdateAsync(user);
             }
 
-            // 5. Generate our own JWT token — same process as normal login
             var token = await GenerateJwtTokenAsync(user);
             return new AuthResponse(user.UserName!, user.Email!, token);
         }
@@ -117,13 +139,8 @@ namespace LibrarySystem.DataAccess.Services
             {
                 var settings = new GoogleJsonWebSignature.ValidationSettings
                 {
-                    // Your Google ClientId — only accept tokens issued for YOUR app
                     Audience = new[] { _configuration["Authentication:Google:ClientId"] }
                 };
-
-                // Send the token to Google's servers for verification
-                // Returns the decoded user info (email, name, etc.) if valid
-                // Throws an exception if the token is fake or expired
                 return await GoogleJsonWebSignature.ValidateAsync(idToken, settings);
             }
             catch

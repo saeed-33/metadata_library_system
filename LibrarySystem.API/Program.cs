@@ -24,6 +24,18 @@ builder.Host.UseSerilog();
 builder.Services.AddApplicationServices();
 builder.Services.AddInfrastructureServices(builder.Configuration);
 
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowReactApp",
+        policy =>
+        {
+            policy.WithOrigins("http://localhost:5173")
+                  .AllowAnyHeader()
+                  .AllowAnyMethod()
+                  .AllowCredentials();
+        });
+});
+
 builder.Services.AddAuthentication(options =>
 {
     options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -84,10 +96,19 @@ builder.Services.AddSwaggerGen(options =>
         }
     });
 });
+
 builder.Services.AddAuthorization(options =>
 {
     options.FallbackPolicy = new AuthorizationPolicyBuilder()
         .RequireAuthenticatedUser()
+        .RequireAssertion(context =>
+        {
+            if (context.Resource is HttpContext httpContext && httpContext.Request.Method == "OPTIONS")
+            {
+                return true;
+            }
+            return context.User.Identity?.IsAuthenticated ?? false;
+        })
         .Build();
 });
 
@@ -106,6 +127,9 @@ using (var scope = app.Services.CreateScope())
     Log.Information("Seeding identity roles.");
     var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<AppRoleModel>>();
     await RoleSeeder.SeedRolesAsync(roleManager);
+
+    Log.Information("Seeding development metadata.");
+    await RoleSeeder.MetadataSeeder.SeedAsync(applicationDbContext);
 }
 
 if (!app.Environment.IsDevelopment())
@@ -119,10 +143,12 @@ else
 }
 
 app.UseHttpsRedirection();
-app.UseMiddleware<ExceptionHandlingMiddleware>();
 app.UseStaticFiles();
 app.UseRouting();
 
+app.UseCors("AllowReactApp");
+
+app.UseMiddleware<ExceptionHandlingMiddleware>();
 app.UseAuthentication();
 app.UseMiddleware<RequestLoggingMiddleware>();
 app.UseAuthorization();
@@ -130,4 +156,3 @@ app.UseAuthorization();
 app.MapControllers();
 
 app.Run();
-

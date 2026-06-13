@@ -16,6 +16,20 @@ builder.Services.AddControllers()
         options.JsonSerializerOptions.WriteIndented = true;
     });
 
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowReactApp",
+        policy =>
+        {
+            policy.WithOrigins("http://localhost:5173")
+                  .AllowAnyHeader()
+                  .AllowAnyMethod()
+                  //.AllowCredentials()
+                  ;
+        });
+});
+
+
 var connectionString = builder.Configuration.GetConnectionString("Default")
     ?? throw new InvalidOperationException("Logging database connection string is missing.");
 
@@ -25,7 +39,6 @@ builder.Services.AddDbContext<LoggingDbContext>(options =>
 builder.Services.AddScoped<ILogRepository, LogRepository>();
 builder.Services.AddScoped<ILogService, LogService>();
 
-// FIXED: Cleaned up AutoMapper declaration to avoid assembly scanning conflicts
 builder.Services.AddAutoMapper(cfg =>
 {
     cfg.CreateMap<Log, LogDto>();
@@ -47,9 +60,12 @@ if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
-} 
+}
 
 app.UseHttpsRedirection();
+
+app.UseCors("AllowReactApp");
+
 app.UseAuthorization();
 app.MapControllers();
 

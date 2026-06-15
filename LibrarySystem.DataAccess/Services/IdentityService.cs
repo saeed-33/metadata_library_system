@@ -19,4 +19,17 @@ public class IdentityService : IIdentityService
 		if (user == null) return new List<string>();
 		return (await _userManager.GetRolesAsync(user)).ToList();
 	}
+    public async Task<bool> UpdateUserRolesAsync(string externalId, List<string> roleNames)
+    {
+        var user = await _userManager.FindByIdAsync(externalId);
+        if (user == null) return false;
+
+        // 1. Remove all current roles
+        var currentRoles = await _userManager.GetRolesAsync(user);
+        await _userManager.RemoveFromRolesAsync(user, currentRoles);
+
+        // 2. Assign new roles
+        var result = await _userManager.AddToRolesAsync(user, roleNames);
+        return result.Succeeded;
+    }
 }

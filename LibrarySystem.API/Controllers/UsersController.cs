@@ -64,4 +64,16 @@ public class UsersController : ControllerBase
         var deleted = await _mediator.Send(new DeleteSystemUserCommand(id));
         return deleted ? NoContent() : NotFound();
     }
+    //NEW ENDPOINT: Only Admin can update a user's roles
+    [HttpPut("{id:int}/roles")]
+    [Authorize(Roles = SystemRoles.Admin)]
+    public async Task<IActionResult> UpdateRoles(int id, UpdateSystemUserRolesCommand command)
+    {
+        if (id != command.Id)
+            return BadRequest("URL id does not match command id.");
+
+        var updated = await _mediator.Send(command);
+        return updated ? NoContent() : NotFound();
+    }
+
 }

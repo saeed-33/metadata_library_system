@@ -105,6 +105,12 @@ public class MediaController : ControllerBase
             return StatusCode(500, "An error occurred while saving data; file upload was rolled back.");
         }
     }
+    [HttpGet]
+    public async Task<IActionResult> GetAll()
+    {
+        var mediaList = await _mediator.Send(new GetAllMediaQuery());
+        return Ok(mediaList);
+    }
 }
 
     public class UploadMediaRequestDto

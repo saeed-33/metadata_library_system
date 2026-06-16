@@ -1,14 +1,15 @@
-﻿using System;
+﻿using AutoMapper;
+using LibrarySystem.Application.Interfaces;
+using LibrarySystem.DataAccess.Persistence.Contexts;
+using LibrarySystem.DataAccess.Persistence.models;
+using LibrarySystem.Domain.entities;
+using LibrarySystem.Domain.Entities; // تأكد من أن الـ Bookmark موجود هنا أو في LibrarySystem.Domain.entities
+using Microsoft.EntityFrameworkCore;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using AutoMapper;
-using LibrarySystem.Application.Interfaces;
-using LibrarySystem.DataAccess.Persistence.Contexts;
-using LibrarySystem.DataAccess.Persistence.models;
-using LibrarySystem.Domain.Entities;
-using Microsoft.EntityFrameworkCore;
 
 namespace LibrarySystem.DataAccess.Repositories
 {
@@ -29,6 +30,9 @@ namespace LibrarySystem.DataAccess.Repositories
         public IGenericRepository<Value> Values { get; }
         public IGenericRepository<SystemUser> SystemUsers { get; }
 
+        // ---- الإضافة الجديدة ----
+        public IGenericRepository<Bookmark> Bookmarks { get; }
+
         public UnitOfWork(ApplicationDbContext context, IMapper mapper)
         {
             _context = context;
@@ -48,13 +52,15 @@ namespace LibrarySystem.DataAccess.Repositories
 
             Values = CreateRepository<Value, ValueModel>(mapper);
             SystemUsers = CreateRepository<SystemUser, SystemUserModel>(mapper);
+
+            // ---- الإضافة الجديدة ----
+            Bookmarks = CreateRepository<Bookmark, BookmarkModel>(mapper);
         }
 
         public async Task<bool> RestoreOrUpdateTemplatePropertyAsync(
-    int templateId, int propertyId,
-    bool isRequired, int displayOrder, string? alternateLabel)
+            int templateId, int propertyId,
+            bool isRequired, int displayOrder, string? alternateLabel)
         {
-            // Find the row including soft-deleted ones
             var model = await _context.TemplateProperties
                 .IgnoreQueryFilters()
                 .FirstOrDefaultAsync(tp =>
@@ -63,19 +69,15 @@ namespace LibrarySystem.DataAccess.Repositories
 
             if (model == null) return false;
 
-            // Update the ALREADY TRACKED model directly — no new object created
-            // EF sees the same object it already tracks → no conflict
             model.IsDeleted = false;
             model.DeletedAt = null;
             model.IsRequired = isRequired;
             model.DisplayOrder = displayOrder;
             model.AlternateLabel = alternateLabel;
 
-            // No need to call Update() — EF already tracks this object
-            // It will detect the changes automatically on SaveChangesAsync
-
             return true;
         }
+
         public async Task<int> SaveChangesAsync()
         {
             var result = await _context.SaveChangesAsync();

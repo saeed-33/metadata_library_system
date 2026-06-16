@@ -18,7 +18,23 @@ namespace LibrarySystem.DataAccess.Repositories
         private readonly ApplicationDbContext _context;
         private readonly IMapper _mapper;
         private readonly List<ISyncGeneratedKeys> _repositoriesWithGeneratedKeys = new();
+        public async Task<bool> RestoreBookmarkIfDeletedAsync(string userId, int itemId)
+        {
+            var model = await _context.Bookmarks
+                .IgnoreQueryFilters()
+                .FirstOrDefaultAsync(b =>
+                    b.UserId == userId &&
+                    b.ItemId == itemId &&
+                    b.IsDeleted == true);
 
+            if (model == null) return false;
+
+            // Restore it — same pattern as TemplateProperty
+            model.IsDeleted = false;
+            model.DeletedAt = null;
+
+            return true;
+        }
         public IGenericRepository<Vocabulary> Vocabularies { get; }
         public IGenericRepository<Property> Properties { get; }
         public IGenericRepository<ResourceTemplate> ResourceTemplates { get; }

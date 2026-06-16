@@ -28,6 +28,7 @@ namespace LibrarySystem.Application.Interfaces
      int templateId, int propertyId,
      bool isRequired, int displayOrder, string? alternateLabel);
 
+        Task<bool> RestoreBookmarkIfDeletedAsync(string userId, int itemId);
 
         Task<int> SaveChangesAsync();
     }

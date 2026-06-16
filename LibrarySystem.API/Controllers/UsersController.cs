@@ -1,3 +1,4 @@
+using LibrarySystem.Application.Commands.ResourceTemplates;
 using LibrarySystem.Application.Commands.Users;
 using LibrarySystem.Application.Queries.Users;
 using LibrarySystem.Domain.common;
@@ -70,6 +71,16 @@ public class UsersController : ControllerBase
     {
         var deleted = await _mediator.Send(new DeleteSystemUserCommand(id));
         return deleted ? NoContent() : NotFound();
+    }
+
+    [HttpPut("Undelet/{id:int}")]
+    public async Task<IActionResult> Undelet(int id, UndeleteSystemUserCommand command)
+    {
+        if (id != command.Id)
+            return BadRequest("URL id does not match command id.");
+
+        var updated = await _mediator.Send(command);
+        return updated ? NoContent() : NotFound();
     }
     //NEW ENDPOINT: Only Admin can update a user's roles
     [HttpPut("{id:int}/roles")]

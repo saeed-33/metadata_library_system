@@ -1,4 +1,6 @@
 using LibrarySystem.Application.Commands;
+using LibrarySystem.Application.Commands.ResourceTemplates;
+using LibrarySystem.Application.Commands.Vocabularies;
 using LibrarySystem.Application.Queries;
 using LibrarySystem.Domain.common;
 using MediatR;
@@ -63,5 +65,14 @@ public class VocabulariesController : ControllerBase
     {
         var deleted = await _mediator.Send(new DeleteVocabularyCommand(id));
         return deleted ? NoContent() : NotFound();
+    }
+    [HttpPut("Undelet/{id:int}")]
+    public async Task<IActionResult> Undelet(int id, UndeleteVocabularyCommand command)
+    {
+        if (id != command.Id)
+            return BadRequest("URL id does not match command id.");
+
+        var updated = await _mediator.Send(command);
+        return updated ? NoContent() : NotFound();
     }
 }

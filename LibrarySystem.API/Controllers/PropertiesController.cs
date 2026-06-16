@@ -1,3 +1,4 @@
+using LibrarySystem.Application.Commands.Media;
 using LibrarySystem.Application.Commands.Properties;
 using LibrarySystem.Application.Queries.Properties;
 using LibrarySystem.Domain.common;
@@ -74,5 +75,15 @@ public class PropertiesController : ControllerBase
     {
         var deleted = await _mediator.Send(new DeletePropertyCommand(id));
         return deleted ? NoContent() : NotFound();
+    }
+
+    [HttpPut("Undelet/{id:int}")]
+    public async Task<IActionResult> Undelet(int id, UndeletePropertyCommand command)
+    {
+        if (id != command.Id)
+            return BadRequest("URL id does not match command id.");
+
+        var updated = await _mediator.Send(command);
+        return updated ? NoContent() : NotFound();
     }
 }

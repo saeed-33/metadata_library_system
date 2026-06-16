@@ -1,6 +1,8 @@
 using LibrarySystem.Application.Commands;
 using LibrarySystem.Application.Queries;
+using LibrarySystem.Domain.common;
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace LibrarySystem.API.Controllers;
@@ -23,6 +25,14 @@ public class VocabulariesController : ControllerBase
         return Ok(vocabularies);
     }
 
+
+    [HttpGet("WithDeleted")]
+    [Authorize(Roles = SystemRoles.Admin)]
+    public async Task<IActionResult> GetAllWithDeleted()
+    {
+        var vocabularies = await _mediator.Send(new GetAllVocabulariesWithDeletedQuery());
+        return Ok(vocabularies);
+    }
     [HttpGet("{id:int}")]
     public async Task<IActionResult> GetById(int id)
     {

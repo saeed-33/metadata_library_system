@@ -11,4 +11,6 @@ public interface IItemSetRepository
     Task<bool> DeleteAsync(int id);
     Task<bool> AddItemAsync(int itemSetId, int itemId);
     Task<bool> RemoveItemAsync(int itemSetId, int itemId);
+    Task<IEnumerable<ItemSet>> GetAllWithDeletedAsync();
+
 }

@@ -1,6 +1,8 @@
 ﻿using LibrarySystem.Application.Commands.ResourceTemplates;
 using LibrarySystem.Application.Queries.ResourceTemplates;
+using LibrarySystem.Domain.common;
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace LibrarySystem.API.Controllers;
@@ -20,6 +22,15 @@ public class ResourceTemplatesController : ControllerBase
     public async Task<IActionResult> GetAll()
     {
         var templates = await _mediator.Send(new GetAllResourceTemplatesQuery());
+        return Ok(templates);
+    }
+
+    [HttpGet("WithDeleted")]
+    [Authorize(Roles = SystemRoles.Admin)]
+
+    public async Task<IActionResult> GetAllWithDeleted()
+    {
+        var templates = await _mediator.Send(new GetAllResourceTemplatesWithDeletedQuery());
         return Ok(templates);
     }
 

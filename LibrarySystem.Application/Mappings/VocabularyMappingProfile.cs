@@ -15,6 +15,9 @@ namespace LibrarySystem.Application.Mappings
         public VocabularyMappingProfile()
         {
             CreateMap<Vocabulary, VocabularyResponse>();
+            CreateMap<Vocabulary, VocabularyAdminResponse>();
+
+
 
             CreateMap<CreateVocabularyCommand, Vocabulary>();
 

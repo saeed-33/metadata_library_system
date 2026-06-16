@@ -12,6 +12,9 @@ public class PropertyMappingProfile : Profile
         CreateMap<Property, PropertyResponse>()
             .ForMember(dest => dest.VocabularyPrefix, opt => opt.MapFrom(src => src.Vocabulary!.Prefix));
 
+        CreateMap<Property, PropertyAdminResponse>()
+            .ForMember(dest => dest.VocabularyPrefix, opt => opt.MapFrom(src => src.Vocabulary!.Prefix));
+
         // تحويل من Commands إلى Entity
         CreateMap<CreatePropertyCommand, Property>();
         CreateMap<UpdatePropertyCommand, Property>();

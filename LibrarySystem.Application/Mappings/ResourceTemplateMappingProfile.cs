@@ -15,6 +15,12 @@ public class ResourceTemplateMappingProfile : Profile
         CreateMap<TemplateProperty, TemplatePropertyResponse>()
             .ForMember(dest => dest.PropertyLabel, opt => opt.MapFrom(src => src.Property!.Label));
 
+        CreateMap<ResourceTemplate, ResourceTemplateAdminResponse>()
+           .ForMember(dest => dest.Properties, opt => opt.MapFrom(src => src.TemplateProperties));
+
+        CreateMap<TemplateProperty, TemplatePropertyAdminResponse>()
+            .ForMember(dest => dest.PropertyLabel, opt => opt.MapFrom(src => src.Property!.Label));
+
         CreateMap<CreateResourceTemplateCommand, ResourceTemplate>();
         CreateMap<UpdateResourceTemplateCommand, ResourceTemplate>();
 

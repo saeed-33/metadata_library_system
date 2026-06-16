@@ -1,4 +1,4 @@
-using AutoMapper;
+﻿using AutoMapper;
 using LibrarySystem.Application.Interfaces;
 using LibrarySystem.DataAccess.Persistence.Contexts;
 using Microsoft.EntityFrameworkCore;
@@ -40,6 +40,13 @@ namespace LibrarySystem.DataAccess.Repositories
             return _mapper.Map<IEnumerable<TDomain>>(models);
         }
 
+        public async Task<IEnumerable<TDomain>> GetAllWithDeletedAsync()
+        {
+            // نستخدم IgnoreQueryFilters هنا أيضاً، مع AsNoTracking لزيادة الأداء
+            var models = await _dbSet.IgnoreQueryFilters().AsNoTracking().ToListAsync();
+            return _mapper.Map<IEnumerable<TDomain>>(models);
+        }
+
         public async Task<IEnumerable<TDomain>> FindAsync(
             Expression<Func<TDomain, bool>> predicate,
             params Expression<Func<TDomain, object>>[] includes)
@@ -65,6 +72,27 @@ namespace LibrarySystem.DataAccess.Repositories
             return domains.Where(predicate.Compile()).ToList();
         }
 
+        public async Task<IEnumerable<TDomain>> FindWithDeletedAsync(Expression<Func<TDomain, bool>> predicate, params Expression<Func<TDomain, object>>[] includes)
+        {
+            var query = _dbSet.IgnoreQueryFilters().AsNoTracking(); // إيقاف الفلتر هنا أيضاً
+            foreach (var include in includes)
+            {
+                if (ExpressionTranslator.TryTranslate<TDomain, TPersistence, object>(include, out var translatedInclude))
+                {
+                    query = query.Include(translatedInclude);
+                }
+            }
+
+            if (ExpressionTranslator.TryTranslate<TDomain, TPersistence, bool>(predicate, out var translatedPredicate))
+            {
+                var filteredModels = await query.Where(translatedPredicate).ToListAsync();
+                return _mapper.Map<IEnumerable<TDomain>>(filteredModels);
+            }
+
+            var models = await query.ToListAsync();
+            var domains = _mapper.Map<IEnumerable<TDomain>>(models);
+            return domains.Where(predicate.Compile()).ToList();
+        }
         public async Task AddAsync(TDomain entity)
         {
             var model = _mapper.Map<TPersistence>(entity);

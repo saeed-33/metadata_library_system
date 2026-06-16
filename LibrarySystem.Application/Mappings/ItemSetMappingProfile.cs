@@ -14,6 +14,11 @@ public class ItemSetMappingProfile : Profile
 
         CreateMap<Item, ItemSetItemResponse>();
 
+        CreateMap<ItemSet, ItemSetAdminResponse>()
+           .ForMember(dest => dest.OwnerName, opt => opt.MapFrom(src => src.Owner == null ? null : src.Owner.FullName));
+
+        CreateMap<Item, ItemSetItemAdminResponse>();
+
         CreateMap<CreateItemSetCommand, ItemSet>();
         CreateMap<UpdateItemSetCommand, ItemSet>();
     }

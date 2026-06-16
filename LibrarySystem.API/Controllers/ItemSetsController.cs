@@ -1,7 +1,9 @@
 using LibrarySystem.Application.Commands.ItemSets;
 using LibrarySystem.Application.DTOs.ItemSets;
 using LibrarySystem.Application.Queries.ItemSets;
+using LibrarySystem.Domain.common;
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace LibrarySystem.API.Controllers;
@@ -21,6 +23,15 @@ public class ItemSetsController : ControllerBase
     public async Task<IActionResult> GetAll()
     {
         var itemSets = await _mediator.Send(new GetAllItemSetsQuery());
+        return Ok(itemSets);
+    }
+
+    [HttpGet("WithDeleted")]
+    [Authorize(Roles = SystemRoles.Admin)]
+
+    public async Task<IActionResult> GetAllWithDeleted()
+    {
+        var itemSets = await _mediator.Send(new GetAllItemSetsWithDeletedQuery());
         return Ok(itemSets);
     }
 

@@ -18,6 +18,15 @@ public class AddBookmarkCommandHandler : IRequestHandler<AddBookmarkCommand, boo
         var itemExists = await _unitOfWork.Items.GetByIdAsync(request.ItemId);
         if (itemExists == null) return false;
 
+        // 2. Check including soft-deleted bookmarks
+        var restored = await _unitOfWork
+            .RestoreBookmarkIfDeletedAsync(request.ExternalUserId, request.ItemId);
+
+        if (restored)
+        {
+            await _unitOfWork.SaveChangesAsync(); // ← save the restore
+            return true;
+        }
         // 2. التحقق من عدم التكرار
         var existing = await _unitOfWork.Bookmarks.FindAsync(b => b.UserId == request.ExternalUserId && b.ItemId == request.ItemId);
         if (existing.Any()) return true; // مضاف مسبقاً

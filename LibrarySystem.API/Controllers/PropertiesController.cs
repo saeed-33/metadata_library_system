@@ -1,6 +1,8 @@
 using LibrarySystem.Application.Commands.Properties;
 using LibrarySystem.Application.Queries.Properties;
+using LibrarySystem.Domain.common;
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace LibrarySystem.API.Controllers;
@@ -21,6 +23,16 @@ public class PropertiesController : ControllerBase
     public async Task<IActionResult> GetAll()
     {
         var properties = await _mediator.Send(new GetAllPropertiesQuery());
+        return Ok(properties);
+    }
+
+
+    [HttpGet("WithDeleted")]
+    [Authorize(Roles = SystemRoles.Admin)]
+
+    public async Task<IActionResult> GetAllWithDeleted()
+    {
+        var properties = await _mediator.Send(new GetAllPropertiesWithDeletedQuery());
         return Ok(properties);
     }
 

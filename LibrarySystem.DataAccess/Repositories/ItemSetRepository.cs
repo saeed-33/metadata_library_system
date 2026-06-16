@@ -1,4 +1,4 @@
-using AutoMapper;
+﻿using AutoMapper;
 using LibrarySystem.Application.Interfaces;
 using LibrarySystem.DataAccess.Persistence.Contexts;
 using LibrarySystem.DataAccess.Persistence.models;
@@ -74,7 +74,32 @@ public class ItemSetRepository : IItemSetRepository, ISyncGeneratedKeys
 
         return true;
     }
+    // أضف هذه الدالة داخل كلاس ItemSetRepository
+    public async Task<IEnumerable<ItemSet>> GetAllWithDeletedAsync()
+    {
+        // نستخدم IgnoreQueryFilters لجلب المحذوف
+        // وأضفنا Include للـ Owner أيضاً لتفادي أخطاء الـ OwnerName
+        var models = await _context.ItemSets
+            .IgnoreQueryFilters()
+            .Include(iset => iset.Owner)
+            .Include(iset => iset.Items)
+            .AsNoTracking()
+            .ToListAsync();
 
+        return models.Select(model =>
+        {
+            var itemSet = _mapper.Map<ItemSet>(model);
+
+            // Inject items manually since mapping ignores them
+            foreach (var itemModel in model.Items)
+            {
+                var item = _mapper.Map<Item>(itemModel);
+                itemSet.Items.Add(item);
+            }
+
+            return itemSet;
+        }).ToList();
+    }
     public async Task<bool> DeleteAsync(int id)
     {
         var model = await _context.ItemSets.FirstOrDefaultAsync(itemSet => itemSet.Id == id);

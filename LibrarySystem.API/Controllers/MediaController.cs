@@ -1,10 +1,12 @@
+using LibrarySystem.Application.Commands.Items;
 using LibrarySystem.Application.Commands.Media;
 using LibrarySystem.Application.Queries.Media;
+using LibrarySystem.Domain.common;
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
 using System.Text.Json;
-using Microsoft.AspNetCore.Hosting;
-using LibrarySystem.Application.Commands.Items;
 namespace LibrarySystem.API.Controllers;
 
 [ApiController]
@@ -109,6 +111,15 @@ public class MediaController : ControllerBase
     public async Task<IActionResult> GetAll()
     {
         var mediaList = await _mediator.Send(new GetAllMediaQuery());
+        return Ok(mediaList);
+    }
+
+    [HttpGet("WithDeleted")]
+    [Authorize(Roles = SystemRoles.Admin)]
+
+    public async Task<IActionResult> GetAllWithDeleted()
+    {
+        var mediaList = await _mediator.Send(new GetAllMediaWithDeletedQuery());
         return Ok(mediaList);
     }
 }

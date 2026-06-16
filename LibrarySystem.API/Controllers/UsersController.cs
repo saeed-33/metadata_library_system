@@ -27,7 +27,14 @@ public class UsersController : ControllerBase
         var users = await _mediator.Send(new GetAllUsersQuery());
         return Ok(users);
     }
-
+    
+    [HttpGet("withDeleted")]
+    [Authorize(Roles = SystemRoles.Admin)]
+    public async Task<IActionResult> GetAllWitDeleted()
+    {
+        var users = await _mediator.Send(new GetAllWithDeletedUsersQuery());
+        return Ok(users);
+    }
     // Admin can get any user, others can only get themselves
     [HttpGet("{id:int}")]
     public async Task<IActionResult> GetById(int id)

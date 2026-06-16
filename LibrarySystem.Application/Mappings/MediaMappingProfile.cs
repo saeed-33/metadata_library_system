@@ -10,5 +10,8 @@ public class MediaMappingProfile : Profile
     {
         CreateMap<LibrarySystem.Domain.Entities.Media, MediaResponse>()
             .ForMember(dest => dest.MetadataValues, opt => opt.MapFrom(src => src.Values));
+
+        CreateMap<LibrarySystem.Domain.Entities.Media, MediaAdminResponse>()
+           .ForMember(dest => dest.MetadataValues, opt => opt.MapFrom(src => src.Values));
     }
 }

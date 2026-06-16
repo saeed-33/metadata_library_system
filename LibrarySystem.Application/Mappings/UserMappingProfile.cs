@@ -12,7 +12,10 @@ public class UserMappingProfile : Profile
         CreateMap<SystemUser, UserResponse>()
             // تحويل قائمة كائنات Role إلى قائمة نصوص (أسماء الأدوار)
             .ForMember(dest => dest.Roles, opt => opt.MapFrom(src => src.Roles.Select(r => r.Name)));
-
+       
+        CreateMap<SystemUser, UserAdminResponse>()
+           .ForMember(dest => dest.Roles, opt => opt.MapFrom(src => src.Roles.Select(r => r.Name)));
+        
         CreateMap<CreateSystemUserCommand, SystemUser>();
         CreateMap<UpdateSystemUserCommand, SystemUser>();
     }

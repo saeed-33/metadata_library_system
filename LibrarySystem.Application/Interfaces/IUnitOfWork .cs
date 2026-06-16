@@ -1,9 +1,10 @@
-﻿using System;
+﻿using LibrarySystem.Domain.entities;
+using LibrarySystem.Domain.Entities;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using LibrarySystem.Domain.Entities;
 
 namespace LibrarySystem.Application.Interfaces
 {
@@ -19,6 +20,7 @@ namespace LibrarySystem.Application.Interfaces
         IItemSetRepository ItemSets { get; }
         IGenericRepository<Value> Values { get; }
 
+        IGenericRepository<Bookmark> Bookmarks { get; }
 
         IGenericRepository<SystemUser> SystemUsers { get; }
 

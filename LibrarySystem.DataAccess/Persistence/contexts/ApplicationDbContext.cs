@@ -5,7 +5,7 @@ using System.Linq.Expressions;
 
 namespace LibrarySystem.DataAccess.Persistence.Contexts
 {
-    public class ApplicationDbContext : DbContext // Standard DbContext
+    public class ApplicationDbContext : DbContext
     {
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options) { }
 
@@ -20,6 +20,9 @@ namespace LibrarySystem.DataAccess.Persistence.Contexts
         public DbSet<ValueModel> Values => Set<ValueModel>();
         public DbSet<SystemUserModel> SystemUsers => Set<SystemUserModel>();
 
+        // 1. إضافة الـ DbSet الخاص بالمفضلة
+        public DbSet<BookmarkModel> Bookmarks => Set<BookmarkModel>();
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             // NO base.OnModelCreating here because we aren't using Identity in this context
@@ -28,6 +31,9 @@ namespace LibrarySystem.DataAccess.Persistence.Contexts
             modelBuilder.Entity<ItemModel>().ToTable("Items");
             modelBuilder.Entity<MediaModel>().ToTable("Media");
             modelBuilder.Entity<ItemSetModel>().ToTable("ItemSets");
+
+            // 2. تحديد اسم جدول المفضلة
+            modelBuilder.Entity<BookmarkModel>().ToTable("Bookmarks");
 
             modelBuilder.Entity<ItemSetModel>()
                 .HasMany(itemSet => itemSet.Items)
@@ -80,12 +86,28 @@ namespace LibrarySystem.DataAccess.Persistence.Contexts
                 .HasForeignKey(value => value.PropertyId)
                 .OnDelete(DeleteBehavior.Restrict);
 
-            // Linking Resource to SystemUser (The Library Profile)
             modelBuilder.Entity<ResourceModel>()
                 .HasOne(r => r.Owner)
                 .WithMany(u => u.OwnedResources)
                 .HasForeignKey(r => r.OwnerId)
                 .OnDelete(DeleteBehavior.SetNull);
+
+            // ==========================================
+            // 3. إعدادات جدول المفضلة (Bookmarks Configuration)
+            // ==========================================
+
+            // ربط المفضلة بالعنصر (إذا تم حذف العنصر نهائياً، تُحذف المفضلة المرتبطة به)
+            modelBuilder.Entity<BookmarkModel>()
+                .HasOne(b => b.Item)
+                .WithMany()
+                .HasForeignKey(b => b.ItemId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // منع تكرار نفس العنصر لنفس المستخدم (Unique Composite Index)
+            modelBuilder.Entity<BookmarkModel>()
+                .HasIndex(b => new { b.UserId, b.ItemId })
+                .IsUnique();
+            // ==========================================
 
             // Soft Delete Filters
             foreach (var entityType in modelBuilder.Model.GetEntityTypes())
@@ -111,7 +133,6 @@ namespace LibrarySystem.DataAccess.Persistence.Contexts
                     entry.Entity.IsDeleted = true;
                     entry.Entity.DeletedAt = DateTime.UtcNow;
                 }
-
             }
             foreach (var entry in ChangeTracker.Entries<IAuditable>())
             {
@@ -121,5 +142,4 @@ namespace LibrarySystem.DataAccess.Persistence.Contexts
             return await base.SaveChangesAsync(ct);
         }
     }
-
 }

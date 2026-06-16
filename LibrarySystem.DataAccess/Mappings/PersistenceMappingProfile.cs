@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using LibrarySystem.DataAccess.Persistence.models;
+using LibrarySystem.Domain.entities;
 using LibrarySystem.Domain.Entities;
 
 namespace LibrarySystem.DataAccess.Mappings
@@ -29,6 +30,9 @@ namespace LibrarySystem.DataAccess.Mappings
             CreateMap<Media, MediaModel>()
                 .ReverseMap()
                 .ForMember(dest => dest.Values, opt => opt.Ignore());
+            
+            CreateMap<Bookmark, BookmarkModel>().ReverseMap();
+
 
             CreateMap<ItemSet, ItemSetModel>()
                 .ReverseMap()

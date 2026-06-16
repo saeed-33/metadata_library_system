@@ -1,3 +1,4 @@
+using LibrarySystem.Application.Commands.Items;
 using LibrarySystem.Application.Commands.ItemSets;
 using LibrarySystem.Application.DTOs.ItemSets;
 using LibrarySystem.Application.Queries.ItemSets;
@@ -87,4 +88,14 @@ public class ItemSetsController : ControllerBase
         var removed = await _mediator.Send(new RemoveItemFromItemSetCommand(itemSetId, itemId));
         return removed ? NoContent() : NotFound();
     }
+    [HttpPut("Undelet/{id:int}")]
+    public async Task<IActionResult> Undelet(int id, UndeleteItemSetCommand command)
+    {
+        if (id != command.Id)
+            return BadRequest("URL id does not match command id.");
+
+        var updated = await _mediator.Send(command);
+        return updated ? NoContent() : NotFound();
+    }
+
 }

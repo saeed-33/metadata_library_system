@@ -108,7 +108,24 @@ public class ItemSetRepository : IItemSetRepository, ISyncGeneratedKeys
         _context.ItemSets.Remove(model);
         return true;
     }
+    public async Task<ItemSet?> GetByIdWithDeletedAsync(int id)
+    {
+        var model = await _context.ItemSets
+            .IgnoreQueryFilters()
+            .Include(iset => iset.Owner)
+            .Include(iset => iset.Items)
+            .FirstOrDefaultAsync(iset => iset.Id == id);
 
+        if (model == null) return null;
+
+        var itemSet = _mapper.Map<ItemSet>(model);
+        foreach (var itemModel in model.Items)
+        {
+            var item = _mapper.Map<Item>(itemModel);
+            itemSet.Items.Add(item);
+        }
+        return itemSet;
+    }
     public async Task<bool> AddItemAsync(int itemSetId, int itemId)
     {
         var itemSet = await _context.ItemSets
@@ -157,4 +174,21 @@ public class ItemSetRepository : IItemSetRepository, ISyncGeneratedKeys
             .Include(itemSet => itemSet.Owner)
             .Include(itemSet => itemSet.Items);
     }
+    public async Task<bool> RestoreAsync(int id)
+    {
+        // Fetch the model including soft-deleted ones (IgnoreQueryFilters)
+        var model = await _context.ItemSets
+            .IgnoreQueryFilters()
+            .FirstOrDefaultAsync(iset => iset.Id == id);
+
+        if (model == null) return false;
+
+        // Restore
+        model.IsDeleted = false;
+        model.DeletedAt = null;
+
+        // No need to call Update – change tracking will handle it
+        return true;
+    }
+
 }

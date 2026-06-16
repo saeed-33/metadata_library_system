@@ -57,6 +57,16 @@ public class ItemsController : ControllerBase
         return updated ? NoContent() : NotFound();
     }
 
+    [HttpPut("Undelet/{id:int}")]
+    public async Task<IActionResult> Undelet(int id, UndeletItemCommand command)
+    {
+        if (id != command.Id)
+            return BadRequest("URL id does not match command id.");
+
+        var updated = await _mediator.Send(command);
+        return updated ? NoContent() : NotFound();
+    }
+
     [HttpDelete("{id:int}")]
     public async Task<IActionResult> Delete(int id)
     {

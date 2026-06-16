@@ -1,4 +1,5 @@
 using LibrarySystem.Application.Commands.Items;
+using LibrarySystem.Application.Commands.ItemSets;
 using LibrarySystem.Application.Commands.Media;
 using LibrarySystem.Application.Queries.Media;
 using LibrarySystem.Domain.common;
@@ -122,6 +123,17 @@ public class MediaController : ControllerBase
         var mediaList = await _mediator.Send(new GetAllMediaWithDeletedQuery());
         return Ok(mediaList);
     }
+
+    [HttpPut("Undelet/{id:int}")]
+    public async Task<IActionResult> Undelet(int id, UndeleteMediaCommand command)
+    {
+        if (id != command.Id)
+            return BadRequest("URL id does not match command id.");
+
+        var updated = await _mediator.Send(command);
+        return updated ? NoContent() : NotFound();
+    }
+
 }
 
     public class UploadMediaRequestDto

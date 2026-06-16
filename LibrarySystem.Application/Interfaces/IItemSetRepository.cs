@@ -1,4 +1,4 @@
-using LibrarySystem.Domain.Entities;
+﻿using LibrarySystem.Domain.Entities;
 
 namespace LibrarySystem.Application.Interfaces;
 
@@ -12,5 +12,7 @@ public interface IItemSetRepository
     Task<bool> AddItemAsync(int itemSetId, int itemId);
     Task<bool> RemoveItemAsync(int itemSetId, int itemId);
     Task<IEnumerable<ItemSet>> GetAllWithDeletedAsync();
+    Task<ItemSet?> GetByIdWithDeletedAsync(int id);
 
+    Task<bool> RestoreAsync(int id);
 }

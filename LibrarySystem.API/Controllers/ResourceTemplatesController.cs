@@ -1,4 +1,5 @@
-﻿using LibrarySystem.Application.Commands.ResourceTemplates;
+﻿using LibrarySystem.Application.Commands.Properties;
+using LibrarySystem.Application.Commands.ResourceTemplates;
 using LibrarySystem.Application.Queries.ResourceTemplates;
 using LibrarySystem.Domain.common;
 using MediatR;
@@ -85,5 +86,15 @@ public class ResourceTemplatesController : ControllerBase
         }
 
         return NoContent();
+    }
+
+    [HttpPut("Undelet/{id:int}")]
+    public async Task<IActionResult> Undelet(int id, UndeleteResourceTemplateCommand command)
+    {
+        if (id != command.Id)
+            return BadRequest("URL id does not match command id.");
+
+        var updated = await _mediator.Send(command);
+        return updated ? NoContent() : NotFound();
     }
 }

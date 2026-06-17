@@ -3,43 +3,71 @@ using LibrarySystem.Application.Interfaces;
 using LibrarySystem.Domain.Entities;
 using MediatR;
 
+
 public record UpdateItemCommand(
     int Id,
     int? TemplateId,
-    List<CreateValueRequest> Values // القيم الجديدة/المعدلة
+    List<CreateValueRequest> Values
 ) : IRequest<bool>;
 
 public class UpdateItemCommandHandler : IRequestHandler<UpdateItemCommand, bool>
 {
     private readonly IUnitOfWork _unitOfWork;
+
     public UpdateItemCommandHandler(IUnitOfWork unitOfWork) => _unitOfWork = unitOfWork;
 
     public async Task<bool> Handle(UpdateItemCommand request, CancellationToken cancellationToken)
     {
-        // 1. جلب الـ Item مع قيمه الحالية
-        var item = (await _unitOfWork.Items.FindAsync(i => i.Id == request.Id, i => i.Values)).FirstOrDefault();
+        // 1. Fetch item
+        var item = (await _unitOfWork.Items.FindAsync(
+            i => i.Id == request.Id)).FirstOrDefault();
         if (item == null) return false;
 
-        // 2. تحديث بيانات الـ Item الأساسية
-        item.TemplateId = request.TemplateId;
-
-        // 3. تحديث القيم (Logic: مسح القديم وإضافة الجديد - أسهل وأضمن طريقة في Metadata)
-        var oldValues = await _unitOfWork.Values.FindAsync(v => v.ResourceId == item.Id);
-        foreach (var oldVal in oldValues)
+        // 2. Validate all ValueResourceIds before making any changes
+        foreach (var vReq in request.Values)
         {
-            _unitOfWork.Values.Delete(oldVal);
+            if (vReq.Type == "resource" && vReq.ValueResourceId.HasValue)
+            {
+                // Check across all resource types
+                var existsAsItem = await _unitOfWork.Items.FindAsync(
+                    r => r.Id == vReq.ValueResourceId.Value);
+                var existsAsMedia = await _unitOfWork.Medias.FindAsync(
+                    r => r.Id == vReq.ValueResourceId.Value);
+                var existsAsItemSet = await _unitOfWork.ItemSets.GetByIdAsync(
+                    vReq.ValueResourceId.Value);
+
+                bool resourceExists = existsAsItem.Any()
+                                   || existsAsMedia.Any()
+                                   || existsAsItemSet != null;
+
+                if (!resourceExists)
+                    throw new InvalidOperationException(
+                        $"Resource with id {vReq.ValueResourceId.Value} does not exist. " +
+                        $"Cannot link property {vReq.PropertyId} to a non-existent resource.");
+            }
         }
 
-        // 4. إضافة القيم الجديدة المرسلة في الطلب
+        // 3. Update item basic fields
+        item.TemplateId = request.TemplateId;
+
+        // 4. Delete old values
+        var oldValues = await _unitOfWork.Values
+            .FindAsync(v => v.ResourceId == item.Id);
+        foreach (var oldVal in oldValues)
+            _unitOfWork.Values.Delete(oldVal);
+
+        // 5. Add new values
         foreach (var vReq in request.Values)
         {
             var newValue = new Value
             {
                 PropertyId = vReq.PropertyId,
                 ValueText = vReq.ValueText,
+                ValueUri = vReq.ValueUri,
+                ValueResourceId = vReq.ValueResourceId,
                 Type = vReq.Type,
                 Language = vReq.Language,
-                ResourceId = item.Id // ربطها بالـ Item الحالي
+                ResourceId = item.Id
             };
             await _unitOfWork.Values.AddAsync(newValue);
         }

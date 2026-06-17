@@ -12,10 +12,10 @@ public record CreateItemCommand(
 
 public record CreateValueRequest(
     int PropertyId,
-    string? ValueText,      // للنصوص العادية (literal)
-    string? ValueUri,       // للروابط الخارجية (uri)
-    int? ValueResourceId,   // للربط مع مورد داخلي (resource)
-    string Type = "literal", // "literal", "uri", or "resource"
+    string? ValueText,
+    string? ValueUri,
+    int? ValueResourceId,
+    string Type = "literal",
     string Language = "ar"
 );
 
@@ -27,6 +27,31 @@ public class CreateItemCommandHandler : IRequestHandler<CreateItemCommand, int>
 
     public async Task<int> Handle(CreateItemCommand request, CancellationToken cancellationToken)
     {
+        // 1. Validate all ValueResourceIds before saving anything
+        foreach (var vReq in request.Values)
+        {
+            if (vReq.Type == "resource" && vReq.ValueResourceId.HasValue)
+            {
+                // Check across all resource types
+                var existsAsItem = await _unitOfWork.Items.FindAsync(
+                    r => r.Id == vReq.ValueResourceId.Value);
+                var existsAsMedia = await _unitOfWork.Medias.FindAsync(
+                    r => r.Id == vReq.ValueResourceId.Value);
+                var existsAsItemSet = await _unitOfWork.ItemSets.GetByIdAsync(
+                    vReq.ValueResourceId.Value);
+
+                bool resourceExists = existsAsItem.Any()
+                                   || existsAsMedia.Any()
+                                   || existsAsItemSet != null;
+
+                if (!resourceExists)
+                    throw new InvalidOperationException(
+                        $"Resource with id {vReq.ValueResourceId.Value} does not exist. " +
+                        $"Cannot link property {vReq.PropertyId} to a non-existent resource.");
+            }
+        }
+
+        // 2. Create and save item first to get real Id
         var item = new Item
         {
             TemplateId = request.TemplateId,
@@ -34,11 +59,9 @@ public class CreateItemCommandHandler : IRequestHandler<CreateItemCommand, int>
         };
 
         await _unitOfWork.Items.AddAsync(item);
-
-        // Save item first so it gets a real Id from the database
         await _unitOfWork.SaveChangesAsync();
 
-        // Now item.Id is populated — safe to use as FK for Values
+        // 3. Add values with validated resource links
         foreach (var vReq in request.Values)
         {
             var value = new Value
@@ -49,7 +72,7 @@ public class CreateItemCommandHandler : IRequestHandler<CreateItemCommand, int>
                 ValueResourceId = vReq.ValueResourceId,
                 Type = vReq.Type,
                 Language = vReq.Language,
-                ResourceId = item.Id  // ← use Id directly, not navigation property
+                ResourceId = item.Id
             };
             await _unitOfWork.Values.AddAsync(value);
         }

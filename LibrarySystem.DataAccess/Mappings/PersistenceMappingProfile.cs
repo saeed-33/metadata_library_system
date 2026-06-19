@@ -21,18 +21,20 @@ namespace LibrarySystem.DataAccess.Mappings
                 .ReverseMap()
                 .ForMember(dest => dest.Values, opt => opt.Ignore());
 
+            // تحديث Item ليشمل تجاهل Copies عند التحويل العكسي لمنع تكرار البيانات غير الضرورية
             CreateMap<Item, ItemModel>()
                 .ForMember(dest => dest.ItemSets, opt => opt.Ignore())
+                .ForMember(dest => dest.Copies, opt => opt.MapFrom(src => src.Copies)) // ربط النسخ
                 .ReverseMap()
                 .ForMember(dest => dest.ItemSets, opt => opt.Ignore())
-                .ForMember(dest => dest.Values, opt => opt.Ignore());
+                .ForMember(dest => dest.Values, opt => opt.Ignore())
+                .ForMember(dest => dest.Copies, opt => opt.Ignore()); // تجاهل النسخ عند التحويل من موديل لكيان لضمان التحديث عبر الـ Handler
 
             CreateMap<Media, MediaModel>()
                 .ReverseMap()
                 .ForMember(dest => dest.Values, opt => opt.Ignore());
             
             CreateMap<Bookmark, BookmarkModel>().ReverseMap();
-
 
             CreateMap<ItemSet, ItemSetModel>()
                 .ReverseMap()
@@ -44,8 +46,29 @@ namespace LibrarySystem.DataAccess.Mappings
                 .ReverseMap()
                 .ForMember(dest => dest.Resource, opt => opt.Ignore());
 
-            // SystemUser has Roles navigation property but SystemUserModel does not
-            // Ignore it in both directions
+            // ==========================================
+            // التعديلات الجديدة لنظام الإعارة والإعدادات
+            // ==========================================
+            
+            // 1. إعدادات النظام
+            CreateMap<SystemSetting, SystemSettingModel>().ReverseMap();
+
+            // 2. المستعيرون
+            CreateMap<Patron, PatronModel>().ReverseMap();
+
+            // 3. نسخ العناصر
+            CreateMap<ItemCopy, ItemCopyModel>()
+                .ReverseMap()
+                .ForMember(dest => dest.Item, opt => opt.Ignore()); // تجاهل كائن الـ Item الأساسي لمنع Circular Reference
+
+            // 4. سجل الإعارة
+            CreateMap<BorrowRecord, BorrowRecordModel>()
+                .ReverseMap()
+                .ForMember(dest => dest.Copy, opt => opt.Ignore())
+                .ForMember(dest => dest.Patron, opt => opt.Ignore());
+
+            // ==========================================
+
             CreateMap<SystemUser, SystemUserModel>()
                 .ForMember(dest => dest.OwnedResources, opt => opt.Ignore())
                 .ReverseMap()

@@ -47,8 +47,29 @@ namespace LibrarySystem.DataAccess.Persistence.Seeds
                 var templates = await SeedTemplatesAsync(context, properties);
                 var users = await SeedSystemUsersAsync(context);
                 var items = await SeedItemsAsync(context, templates, users, properties);
+
                 await SeedMediaAsync(context, items, users, properties);
                 await SeedItemSetsAsync(context, items, users);
+                await SeedLibrarySettingsAsync(context);
+
+            }
+            public static async Task SeedLibrarySettingsAsync(ApplicationDbContext context)
+            {
+                // التحقق من وجود الإعداد مسبقاً لمنع التكرار
+                if (!await context.SystemSettings.AnyAsync(s => s.Key == "GlobalBorrowDays"))
+                {
+                    var defaultSetting = new SystemSettingModel
+                    {
+                        Key = "GlobalBorrowDays",
+                        Value = "14", // القيمة الافتراضية 14 يوم
+                        CreatedAt = DateTime.UtcNow,
+                        CreatedBy = SeedUser,
+                        IsDeleted = false
+                    };
+
+                    await context.SystemSettings.AddAsync(defaultSetting);
+                    await context.SaveChangesAsync();
+                }
             }
 
             private static async Task<Dictionary<string, VocabularyModel>> SeedVocabulariesAsync(ApplicationDbContext context)

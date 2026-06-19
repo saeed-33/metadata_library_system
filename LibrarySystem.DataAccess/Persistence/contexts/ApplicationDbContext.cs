@@ -9,6 +9,7 @@ namespace LibrarySystem.DataAccess.Persistence.Contexts
     {
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options) { }
 
+        // الموديلات الأساسية
         public DbSet<VocabularyModel> Vocabularies => Set<VocabularyModel>();
         public DbSet<PropertyModel> Properties => Set<PropertyModel>();
         public DbSet<ResourceTemplateModel> ResourceTemplates => Set<ResourceTemplateModel>();
@@ -19,97 +20,102 @@ namespace LibrarySystem.DataAccess.Persistence.Contexts
         public DbSet<ItemSetModel> ItemSets => Set<ItemSetModel>();
         public DbSet<ValueModel> Values => Set<ValueModel>();
         public DbSet<SystemUserModel> SystemUsers => Set<SystemUserModel>();
-
-        // 1. إضافة الـ DbSet الخاص بالمفضلة
         public DbSet<BookmarkModel> Bookmarks => Set<BookmarkModel>();
+
+        // الموديلات الجديدة (تم تصحيح طريقة التعريف لتناسب بقية الكود)
+        public DbSet<SystemSettingModel> SystemSettings => Set<SystemSettingModel>();
+        public DbSet<ItemCopyModel> ItemCopies => Set<ItemCopyModel>();
+        public DbSet<PatronModel> Patrons => Set<PatronModel>();
+        public DbSet<BorrowRecordModel> BorrowRecords => Set<BorrowRecordModel>();
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            // NO base.OnModelCreating here because we aren't using Identity in this context
-
+            // تعيين أسماء الجداول (لتجنب جمع الأسماء تلقائياً بشكل خاطئ)
             modelBuilder.Entity<ResourceModel>().ToTable("Resources");
             modelBuilder.Entity<ItemModel>().ToTable("Items");
             modelBuilder.Entity<MediaModel>().ToTable("Media");
             modelBuilder.Entity<ItemSetModel>().ToTable("ItemSets");
-
-            // 2. تحديد اسم جدول المفضلة
             modelBuilder.Entity<BookmarkModel>().ToTable("Bookmarks");
 
-            modelBuilder.Entity<ItemSetModel>()
-                .HasMany(itemSet => itemSet.Items)
-                .WithMany(item => item.ItemSets)
-                .UsingEntity<Dictionary<string, object>>(
-                    "ItemSetItems",
-                    right => right.HasOne<ItemModel>()
-                        .WithMany()
-                        .HasForeignKey("ItemId")
-                        .OnDelete(DeleteBehavior.Restrict),
-                    left => left.HasOne<ItemSetModel>()
-                        .WithMany()
-                        .HasForeignKey("ItemSetId")
-                        .OnDelete(DeleteBehavior.Cascade),
-                    join =>
-                    {
-                        join.HasKey("ItemSetId", "ItemId");
-                        join.ToTable("ItemSetItems");
-                    });
+            // جداول الإعارة الجديدة
+            modelBuilder.Entity<SystemSettingModel>().ToTable("SystemSettings");
+            modelBuilder.Entity<ItemCopyModel>().ToTable("ItemCopies");
+            modelBuilder.Entity<PatronModel>().ToTable("Patrons");
+            modelBuilder.Entity<BorrowRecordModel>().ToTable("BorrowRecords");
 
+            // إعدادات الـ Many-to-Many بين المجموعات والعناصر
+            modelBuilder.Entity<ItemSetModel>()
+     .HasMany(itemSet => itemSet.Items) // هذا هو السطر الذي كان ينقصك
+     .WithMany(item => item.ItemSets)
+     .UsingEntity<Dictionary<string, object>>(
+         "ItemSetItems",
+         right => right.HasOne<ItemModel>().WithMany().HasForeignKey("ItemId").OnDelete(DeleteBehavior.Restrict),
+         left => left.HasOne<ItemSetModel>().WithMany().HasForeignKey("ItemSetId").OnDelete(DeleteBehavior.Cascade),
+         join =>
+         {
+             join.HasKey("ItemSetId", "ItemId");
+             join.ToTable("ItemSetItems");
+         });
+
+            // مفاتيح العلاقات (Existing)
             modelBuilder.Entity<TemplatePropertyModel>().HasKey(tp => new { tp.TemplateId, tp.PropertyId });
 
-            modelBuilder.Entity<PropertyModel>()
-                .HasOne(property => property.Vocabulary)
-                .WithMany(vocabulary => vocabulary.Properties)
-                .HasForeignKey(property => property.VocabularyId)
+            // ==========================================
+            // إعدادات نظام الإعارة والإعدادات (تحديث)
+            // ==========================================
+
+            // 1. إعدادات النسخ (ItemCopies)
+            modelBuilder.Entity<ItemCopyModel>()
+                .HasIndex(c => c.Barcode)
+                .IsUnique();
+
+            modelBuilder.Entity<ItemCopyModel>()
+                .HasOne(c => c.Item)
+                .WithMany(i => i.Copies) // تأكد من وجود ICollection<ItemCopyModel> Copies في ItemModel
+                .HasForeignKey(c => c.ItemId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // 2. إعدادات المستعيرين (Patrons)
+            modelBuilder.Entity<PatronModel>()
+                .HasIndex(p => p.NationalId)
+                .IsUnique();
+
+            // 3. إعدادات سجل الإعارة (BorrowRecords)
+            modelBuilder.Entity<BorrowRecordModel>()
+                .HasOne(b => b.Patron)
+                .WithMany()
+                .HasForeignKey(b => b.PatronId)
                 .OnDelete(DeleteBehavior.Restrict);
 
-            modelBuilder.Entity<ItemModel>()
-                .HasOne(item => item.Template)
+            // الربط المفقود: علاقة سجل الإعارة بالنسخة
+            modelBuilder.Entity<BorrowRecordModel>()
+                .HasOne(b => b.Copy)
                 .WithMany()
-                .HasForeignKey(item => item.TemplateId)
-                .OnDelete(DeleteBehavior.SetNull);
+                .HasForeignKey(b => b.CopyId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // 4. إعدادات النظام (SystemSettings)
+            modelBuilder.Entity<SystemSettingModel>()
+                .HasIndex(s => s.Key)
+                .IsUnique();
+
+            // ==========================================
+            // بقية العلاقات القديمة
+            // ==========================================
+
+            modelBuilder.Entity<PropertyModel>()
+                .HasOne(p => p.Vocabulary).WithMany(v => v.Properties)
+                .HasForeignKey(p => p.VocabularyId).OnDelete(DeleteBehavior.Restrict);
 
             modelBuilder.Entity<MediaModel>()
-                .HasOne(media => media.Item)
-                .WithMany(item => item.Medias)
-                .HasForeignKey(media => media.ItemId)
-                .OnDelete(DeleteBehavior.Restrict);
+                .HasOne(m => m.Item).WithMany(i => i.Medias)
+                .HasForeignKey(m => m.ItemId).OnDelete(DeleteBehavior.Restrict);
 
             modelBuilder.Entity<ValueModel>()
-                .HasOne(value => value.Resource)
-                .WithMany(resource => resource.Values)
-                .HasForeignKey(value => value.ResourceId)
-                .OnDelete(DeleteBehavior.Cascade);
+                .HasOne(v => v.Resource).WithMany(r => r.Values)
+                .HasForeignKey(v => v.ResourceId).OnDelete(DeleteBehavior.Cascade);
 
-            modelBuilder.Entity<ValueModel>()
-                .HasOne(value => value.Property)
-                .WithMany()
-                .HasForeignKey(value => value.PropertyId)
-                .OnDelete(DeleteBehavior.Restrict);
-
-            modelBuilder.Entity<ResourceModel>()
-                .HasOne(r => r.Owner)
-                .WithMany(u => u.OwnedResources)
-                .HasForeignKey(r => r.OwnerId)
-                .OnDelete(DeleteBehavior.SetNull);
-
-            // ==========================================
-            // 3. إعدادات جدول المفضلة (Bookmarks Configuration)
-            // ==========================================
-
-            // ربط المفضلة بالعنصر (إذا تم حذف العنصر نهائياً، تُحذف المفضلة المرتبطة به)
-            modelBuilder.Entity<BookmarkModel>()
-                .HasOne(b => b.Item)
-                .WithMany()
-                .HasForeignKey(b => b.ItemId)
-                .OnDelete(DeleteBehavior.Cascade);
-
-            // منع تكرار نفس العنصر لنفس المستخدم (Unique Composite Index)
-            modelBuilder.Entity<BookmarkModel>()
-                .HasIndex(b => new { b.UserId, b.ItemId })
-                .IsUnique();
-            // ==========================================
-
-            // Soft Delete Filters
+            // Soft Delete Filters (تلقائي لكل الكيانات التي تدعم ISoftDelete)
             foreach (var entityType in modelBuilder.Model.GetEntityTypes())
             {
                 if (typeof(ISoftDelete).IsAssignableFrom(entityType.ClrType) && entityType.BaseType == null)

@@ -12,5 +12,7 @@ namespace LibrarySystem.Domain.Entities
         public string LocalName { get; set; } = null!;
         public string Label { get; set; } = null!;
         public string TermUri { get; set; } = null!;
+
+        public bool IsSearchable { get; set; } = false;
     }
 }

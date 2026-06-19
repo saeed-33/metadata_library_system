@@ -16,5 +16,6 @@ namespace LibrarySystem.DataAccess.Persistence.models
         [Required, StringLength(100)] public string LocalName { get; set; } = string.Empty;
         [Required, StringLength(100)] public string Label { get; set; } = string.Empty;
         [Required, StringLength(255)] public string TermUri { get; set; } = string.Empty;
+        public bool IsSearchable { get; set; } = true;
     }
 }

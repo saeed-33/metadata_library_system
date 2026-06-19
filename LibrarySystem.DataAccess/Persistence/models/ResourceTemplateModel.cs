@@ -18,6 +18,9 @@ namespace LibrarySystem.DataAccess.Persistence.models
         [StringLength(500)]
         public string? Description { get; set; }
 
+        public bool IsBorrowable { get; set; } = true;
+        public int? DefaultBorrowDays { get; set; }
+
         public ICollection<TemplatePropertyModel> TemplateProperties { get; set; } = new List<TemplatePropertyModel>();
     }
 }

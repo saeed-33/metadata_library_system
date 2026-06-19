@@ -4,6 +4,7 @@ using LibrarySystem.DataAccess.Persistence.Contexts;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace LibrarySystem.DataAccess.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260619111638_InitialLibrarySetup")]
+    partial class InitialLibrarySetup
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -77,172 +80,10 @@ namespace LibrarySystem.DataAccess.Migrations
 
                     b.HasIndex("ItemId");
 
+                    b.HasIndex("UserId", "ItemId")
+                        .IsUnique();
+
                     b.ToTable("Bookmarks", (string)null);
-                });
-
-            modelBuilder.Entity("LibrarySystem.DataAccess.Persistence.models.BorrowRecordModel", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<DateTime>("BorrowDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<int>("CopyId")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("CreatedBy")
-                        .HasMaxLength(128)
-                        .HasColumnType("nvarchar(128)");
-
-                    b.Property<DateTime?>("DeletedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<DateTime>("DueDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<bool>("IsDeleted")
-                        .HasColumnType("bit");
-
-                    b.Property<DateTime?>("ModifiedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("ModifiedBy")
-                        .HasMaxLength(128)
-                        .HasColumnType("nvarchar(128)");
-
-                    b.Property<int>("PatronId")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime?>("ReturnDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("Status")
-                        .IsRequired()
-                        .HasMaxLength(20)
-                        .HasColumnType("nvarchar(20)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("CopyId");
-
-                    b.HasIndex("PatronId");
-
-                    b.ToTable("BorrowRecords", (string)null);
-                });
-
-            modelBuilder.Entity("LibrarySystem.DataAccess.Persistence.models.ItemCopyModel", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("Barcode")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("CreatedBy")
-                        .HasMaxLength(128)
-                        .HasColumnType("nvarchar(128)");
-
-                    b.Property<DateTime?>("DeletedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<bool>("IsDeleted")
-                        .HasColumnType("bit");
-
-                    b.Property<int>("ItemId")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime?>("ModifiedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("ModifiedBy")
-                        .HasMaxLength(128)
-                        .HasColumnType("nvarchar(128)");
-
-                    b.Property<string>("Notes")
-                        .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
-
-                    b.Property<int>("Status")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("Barcode")
-                        .IsUnique();
-
-                    b.HasIndex("ItemId");
-
-                    b.ToTable("ItemCopies", (string)null);
-                });
-
-            modelBuilder.Entity("LibrarySystem.DataAccess.Persistence.models.PatronModel", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("CreatedBy")
-                        .HasMaxLength(128)
-                        .HasColumnType("nvarchar(128)");
-
-                    b.Property<DateTime?>("DeletedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("Email")
-                        .HasMaxLength(150)
-                        .HasColumnType("nvarchar(150)");
-
-                    b.Property<string>("FullName")
-                        .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("nvarchar(200)");
-
-                    b.Property<bool>("IsDeleted")
-                        .HasColumnType("bit");
-
-                    b.Property<DateTime?>("ModifiedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("ModifiedBy")
-                        .HasMaxLength(128)
-                        .HasColumnType("nvarchar(128)");
-
-                    b.Property<string>("NationalId")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
-                    b.Property<string>("PhoneNumber")
-                        .IsRequired()
-                        .HasMaxLength(20)
-                        .HasColumnType("nvarchar(20)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("NationalId")
-                        .IsUnique();
-
-                    b.ToTable("Patrons", (string)null);
                 });
 
             modelBuilder.Entity("LibrarySystem.DataAccess.Persistence.models.PropertyModel", b =>
@@ -264,9 +105,6 @@ namespace LibrarySystem.DataAccess.Migrations
                         .HasColumnType("datetime2");
 
                     b.Property<bool>("IsDeleted")
-                        .HasColumnType("bit");
-
-                    b.Property<bool>("IsSearchable")
                         .HasColumnType("bit");
 
                     b.Property<string>("Label")
@@ -361,18 +199,12 @@ namespace LibrarySystem.DataAccess.Migrations
                         .HasMaxLength(128)
                         .HasColumnType("nvarchar(128)");
 
-                    b.Property<int?>("DefaultBorrowDays")
-                        .HasColumnType("int");
-
                     b.Property<DateTime?>("DeletedAt")
                         .HasColumnType("datetime2");
 
                     b.Property<string>("Description")
                         .HasMaxLength(500)
                         .HasColumnType("nvarchar(500)");
-
-                    b.Property<bool>("IsBorrowable")
-                        .HasColumnType("bit");
 
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("bit");
@@ -392,51 +224,6 @@ namespace LibrarySystem.DataAccess.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("ResourceTemplates");
-                });
-
-            modelBuilder.Entity("LibrarySystem.DataAccess.Persistence.models.SystemSettingModel", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("CreatedBy")
-                        .HasMaxLength(128)
-                        .HasColumnType("nvarchar(128)");
-
-                    b.Property<DateTime?>("DeletedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<bool>("IsDeleted")
-                        .HasColumnType("bit");
-
-                    b.Property<string>("Key")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
-                    b.Property<DateTime?>("ModifiedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("ModifiedBy")
-                        .HasMaxLength(128)
-                        .HasColumnType("nvarchar(128)");
-
-                    b.Property<string>("Value")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("Key")
-                        .IsUnique();
-
-                    b.ToTable("SystemSettings", (string)null);
                 });
 
             modelBuilder.Entity("LibrarySystem.DataAccess.Persistence.models.SystemUserModel", b =>
@@ -719,36 +506,6 @@ namespace LibrarySystem.DataAccess.Migrations
                     b.Navigation("Item");
                 });
 
-            modelBuilder.Entity("LibrarySystem.DataAccess.Persistence.models.BorrowRecordModel", b =>
-                {
-                    b.HasOne("LibrarySystem.DataAccess.Persistence.models.ItemCopyModel", "Copy")
-                        .WithMany()
-                        .HasForeignKey("CopyId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.HasOne("LibrarySystem.DataAccess.Persistence.models.PatronModel", "Patron")
-                        .WithMany()
-                        .HasForeignKey("PatronId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.Navigation("Copy");
-
-                    b.Navigation("Patron");
-                });
-
-            modelBuilder.Entity("LibrarySystem.DataAccess.Persistence.models.ItemCopyModel", b =>
-                {
-                    b.HasOne("LibrarySystem.DataAccess.Persistence.models.ItemModel", "Item")
-                        .WithMany("Copies")
-                        .HasForeignKey("ItemId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Item");
-                });
-
             modelBuilder.Entity("LibrarySystem.DataAccess.Persistence.models.PropertyModel", b =>
                 {
                     b.HasOne("LibrarySystem.DataAccess.Persistence.models.VocabularyModel", "Vocabulary")
@@ -764,7 +521,8 @@ namespace LibrarySystem.DataAccess.Migrations
                 {
                     b.HasOne("LibrarySystem.DataAccess.Persistence.models.SystemUserModel", "Owner")
                         .WithMany("OwnedResources")
-                        .HasForeignKey("OwnerId");
+                        .HasForeignKey("OwnerId")
+                        .OnDelete(DeleteBehavior.SetNull);
 
                     b.Navigation("Owner");
                 });
@@ -793,7 +551,7 @@ namespace LibrarySystem.DataAccess.Migrations
                     b.HasOne("LibrarySystem.DataAccess.Persistence.models.PropertyModel", "Property")
                         .WithMany()
                         .HasForeignKey("PropertyId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.HasOne("LibrarySystem.DataAccess.Persistence.models.ResourceModel", "Resource")
@@ -817,7 +575,8 @@ namespace LibrarySystem.DataAccess.Migrations
 
                     b.HasOne("LibrarySystem.DataAccess.Persistence.models.ResourceTemplateModel", "Template")
                         .WithMany()
-                        .HasForeignKey("TemplateId");
+                        .HasForeignKey("TemplateId")
+                        .OnDelete(DeleteBehavior.SetNull);
 
                     b.Navigation("Template");
                 });
@@ -870,8 +629,6 @@ namespace LibrarySystem.DataAccess.Migrations
 
             modelBuilder.Entity("LibrarySystem.DataAccess.Persistence.models.ItemModel", b =>
                 {
-                    b.Navigation("Copies");
-
                     b.Navigation("Medias");
                 });
 #pragma warning restore 612, 618

@@ -86,4 +86,11 @@ public class PropertiesController : ControllerBase
         var updated = await _mediator.Send(command);
         return updated ? NoContent() : NotFound();
     }
+
+    [HttpGet("searchable-fields")]
+    public async Task<IActionResult> GetSearchableFields()
+    {
+        var fields = await _mediator.Send(new GetSearchableFieldsQuery());
+        return Ok(fields);
+    }
 }

@@ -10,6 +10,8 @@ namespace LibrarySystem.Domain.Entities
         public int? TemplateId { get; set; }
         public virtual ResourceTemplate? Template { get; set; }
 
+        public virtual ICollection<ItemCopy> Copies { get; set; } = new HashSet<ItemCopy>();
+
         public virtual ICollection<Media> Medias { get; set; } = new List<Media>();
         public virtual ICollection<ItemSet> ItemSets { get; set; } = new List<ItemSet>();
     }

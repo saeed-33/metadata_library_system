@@ -4,6 +4,7 @@ using LibrarySystem.DataAccess.Persistence.Contexts;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace LibrarySystem.DataAccess.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260619121950_AddBorrowOp")]
+    partial class AddBorrowOp
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -77,6 +80,9 @@ namespace LibrarySystem.DataAccess.Migrations
 
                     b.HasIndex("ItemId");
 
+                    b.HasIndex("UserId", "ItemId")
+                        .IsUnique();
+
                     b.ToTable("Bookmarks", (string)null);
                 });
 
@@ -134,7 +140,7 @@ namespace LibrarySystem.DataAccess.Migrations
 
                     b.HasIndex("PatronId");
 
-                    b.ToTable("BorrowRecords", (string)null);
+                    b.ToTable("BorrowRecords");
                 });
 
             modelBuilder.Entity("LibrarySystem.DataAccess.Persistence.models.ItemCopyModel", b =>
@@ -187,7 +193,7 @@ namespace LibrarySystem.DataAccess.Migrations
 
                     b.HasIndex("ItemId");
 
-                    b.ToTable("ItemCopies", (string)null);
+                    b.ToTable("ItemCopies");
                 });
 
             modelBuilder.Entity("LibrarySystem.DataAccess.Persistence.models.PatronModel", b =>
@@ -242,7 +248,7 @@ namespace LibrarySystem.DataAccess.Migrations
                     b.HasIndex("NationalId")
                         .IsUnique();
 
-                    b.ToTable("Patrons", (string)null);
+                    b.ToTable("Patrons");
                 });
 
             modelBuilder.Entity("LibrarySystem.DataAccess.Persistence.models.PropertyModel", b =>
@@ -436,7 +442,7 @@ namespace LibrarySystem.DataAccess.Migrations
                     b.HasIndex("Key")
                         .IsUnique();
 
-                    b.ToTable("SystemSettings", (string)null);
+                    b.ToTable("SystemSettings");
                 });
 
             modelBuilder.Entity("LibrarySystem.DataAccess.Persistence.models.SystemUserModel", b =>
@@ -724,7 +730,7 @@ namespace LibrarySystem.DataAccess.Migrations
                     b.HasOne("LibrarySystem.DataAccess.Persistence.models.ItemCopyModel", "Copy")
                         .WithMany()
                         .HasForeignKey("CopyId")
-                        .OnDelete(DeleteBehavior.Restrict)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("LibrarySystem.DataAccess.Persistence.models.PatronModel", "Patron")
@@ -741,7 +747,7 @@ namespace LibrarySystem.DataAccess.Migrations
             modelBuilder.Entity("LibrarySystem.DataAccess.Persistence.models.ItemCopyModel", b =>
                 {
                     b.HasOne("LibrarySystem.DataAccess.Persistence.models.ItemModel", "Item")
-                        .WithMany("Copies")
+                        .WithMany()
                         .HasForeignKey("ItemId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -764,7 +770,8 @@ namespace LibrarySystem.DataAccess.Migrations
                 {
                     b.HasOne("LibrarySystem.DataAccess.Persistence.models.SystemUserModel", "Owner")
                         .WithMany("OwnedResources")
-                        .HasForeignKey("OwnerId");
+                        .HasForeignKey("OwnerId")
+                        .OnDelete(DeleteBehavior.SetNull);
 
                     b.Navigation("Owner");
                 });
@@ -793,7 +800,7 @@ namespace LibrarySystem.DataAccess.Migrations
                     b.HasOne("LibrarySystem.DataAccess.Persistence.models.PropertyModel", "Property")
                         .WithMany()
                         .HasForeignKey("PropertyId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.HasOne("LibrarySystem.DataAccess.Persistence.models.ResourceModel", "Resource")
@@ -817,7 +824,8 @@ namespace LibrarySystem.DataAccess.Migrations
 
                     b.HasOne("LibrarySystem.DataAccess.Persistence.models.ResourceTemplateModel", "Template")
                         .WithMany()
-                        .HasForeignKey("TemplateId");
+                        .HasForeignKey("TemplateId")
+                        .OnDelete(DeleteBehavior.SetNull);
 
                     b.Navigation("Template");
                 });
@@ -870,8 +878,6 @@ namespace LibrarySystem.DataAccess.Migrations
 
             modelBuilder.Entity("LibrarySystem.DataAccess.Persistence.models.ItemModel", b =>
                 {
-                    b.Navigation("Copies");
-
                     b.Navigation("Medias");
                 });
 #pragma warning restore 612, 618

@@ -1,5 +1,4 @@
 using LibrarySystem.Domain.Common;
-using System.ComponentModel.DataAnnotations;
 
 namespace LibrarySystem.Domain.Entities
 {
@@ -7,6 +6,8 @@ namespace LibrarySystem.Domain.Entities
     {
         public string Label { get; set; } = null!;
         public string? Description { get; set; }
+           public bool IsBorrowable { get; set; } = true; 
+    public int? DefaultBorrowDays { get; set; } // إذا ترك فارغاً، سيأخذ من الإعدادات العامة
         public virtual ICollection<TemplateProperty> TemplateProperties { get; set; } = new List<TemplateProperty>();
     }
 }

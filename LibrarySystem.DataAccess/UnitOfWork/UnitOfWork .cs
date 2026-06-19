@@ -3,12 +3,11 @@ using LibrarySystem.Application.Interfaces;
 using LibrarySystem.DataAccess.Persistence.Contexts;
 using LibrarySystem.DataAccess.Persistence.models;
 using LibrarySystem.Domain.entities;
-using LibrarySystem.Domain.Entities; // تأكد من أن الـ Bookmark موجود هنا أو في LibrarySystem.Domain.entities
+using LibrarySystem.Domain.Entities; 
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace LibrarySystem.DataAccess.Repositories
@@ -18,23 +17,7 @@ namespace LibrarySystem.DataAccess.Repositories
         private readonly ApplicationDbContext _context;
         private readonly IMapper _mapper;
         private readonly List<ISyncGeneratedKeys> _repositoriesWithGeneratedKeys = new();
-        public async Task<bool> RestoreBookmarkIfDeletedAsync(string userId, int itemId)
-        {
-            var model = await _context.Bookmarks
-                .IgnoreQueryFilters()
-                .FirstOrDefaultAsync(b =>
-                    b.UserId == userId &&
-                    b.ItemId == itemId &&
-                    b.IsDeleted == true);
 
-            if (model == null) return false;
-
-            // Restore it — same pattern as TemplateProperty
-            model.IsDeleted = false;
-            model.DeletedAt = null;
-
-            return true;
-        }
         public IGenericRepository<Vocabulary> Vocabularies { get; }
         public IGenericRepository<Property> Properties { get; }
         public IGenericRepository<ResourceTemplate> ResourceTemplates { get; }
@@ -45,15 +28,20 @@ namespace LibrarySystem.DataAccess.Repositories
         public IItemSetRepository ItemSets { get; }
         public IGenericRepository<Value> Values { get; }
         public IGenericRepository<SystemUser> SystemUsers { get; }
-
-        // ---- الإضافة الجديدة ----
         public IGenericRepository<Bookmark> Bookmarks { get; }
+
+        // ---- الإضافات الجديدة لنظام الإعارة ----
+        public IGenericRepository<SystemSetting> SystemSettings { get; }
+        public IGenericRepository<ItemCopy> ItemCopies { get; }
+        public IGenericRepository<Patron> Patrons { get; }
+        public IGenericRepository<BorrowRecord> BorrowRecords { get; }
 
         public UnitOfWork(ApplicationDbContext context, IMapper mapper)
         {
             _context = context;
             _mapper = mapper;
 
+            // تهيئة المستودعات الموجودة مسبقاً
             Vocabularies = CreateRepository<Vocabulary, VocabularyModel>(mapper);
             Properties = CreateRepository<Property, PropertyModel>(mapper);
             ResourceTemplates = CreateRepository<ResourceTemplate, ResourceTemplateModel>(mapper);
@@ -68,9 +56,29 @@ namespace LibrarySystem.DataAccess.Repositories
 
             Values = CreateRepository<Value, ValueModel>(mapper);
             SystemUsers = CreateRepository<SystemUser, SystemUserModel>(mapper);
-
-            // ---- الإضافة الجديدة ----
             Bookmarks = CreateRepository<Bookmark, BookmarkModel>(mapper);
+
+            // ---- تهيئة المستودعات الجديدة لنظام الإعارة ----
+            SystemSettings = CreateRepository<SystemSetting, SystemSettingModel>(mapper);
+            ItemCopies = CreateRepository<ItemCopy, ItemCopyModel>(mapper);
+            Patrons = CreateRepository<Patron, PatronModel>(mapper);
+            BorrowRecords = CreateRepository<BorrowRecord, BorrowRecordModel>(mapper);
+        }
+
+        public async Task<bool> RestoreBookmarkIfDeletedAsync(string userId, int itemId)
+        {
+            var model = await _context.Bookmarks
+                .IgnoreQueryFilters()
+                .FirstOrDefaultAsync(b =>
+                    b.UserId == userId &&
+                    b.ItemId == itemId &&
+                    b.IsDeleted == true);
+
+            if (model == null) return false;
+
+            model.IsDeleted = false;
+            model.DeletedAt = null;
+            return true;
         }
 
         public async Task<bool> RestoreOrUpdateTemplatePropertyAsync(

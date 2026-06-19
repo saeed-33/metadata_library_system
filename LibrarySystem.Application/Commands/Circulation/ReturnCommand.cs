@@ -6,7 +6,7 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace LibrarySystem.Application.Commands.Features
+namespace LibrarySystem.Application.Commands.Circulation
 {
     public record ReturnCommand(string Barcode) : IRequest<bool>;
 

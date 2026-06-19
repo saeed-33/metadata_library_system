@@ -1,6 +1,6 @@
 using MediatR;
 
-namespace LibrarySystem.Application.Commands.Features
+namespace LibrarySystem.Application.Commands.Circulation
 {
     // الطلب الذي سيرسله الـ API
     public record CheckoutCommand(

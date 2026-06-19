@@ -1,7 +1,7 @@
 using FluentValidation;
 
 namespace LibrarySystem.Application.Validators.Circulation;
-public class CheckoutCommandValidator : AbstractValidator<Commands.Features.CheckoutCommand>
+public class CheckoutCommandValidator : AbstractValidator<Commands.Circulation.CheckoutCommand>
 {
     public CheckoutCommandValidator()
     {

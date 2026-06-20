@@ -1,4 +1,5 @@
-﻿using LibrarySystem.Application.DTOs.Users;
+﻿using AutoMapper;
+using LibrarySystem.Application.DTOs.Users;
 using LibrarySystem.Application.Interfaces;
 using MediatR;
 
@@ -10,13 +11,16 @@ public class GetAllWithDeletedUsersQueryHandler : IRequestHandler<GetAllWithDele
 {
     private readonly IUnitOfWork _unitOfWork;
     private readonly IIdentityService _identityService;
+    private readonly IMapper _mapper;
 
     public GetAllWithDeletedUsersQueryHandler(
         IUnitOfWork unitOfWork,
-        IIdentityService identityService)
+        IIdentityService identityService,
+        IMapper mapper)
     {
         _unitOfWork = unitOfWork;
         _identityService = identityService;
+        _mapper = mapper;
     }
 
     public async Task<IEnumerable<UserAdminResponse>> Handle(
@@ -32,15 +36,7 @@ public class GetAllWithDeletedUsersQueryHandler : IRequestHandler<GetAllWithDele
             var roles = await _identityService
                 .GetRolesByExternalIdAsync(user.ExternalId);
 
-            result.Add(new UserAdminResponse(
-                user.Id,
-                user.ExternalId,
-                user.FullName,
-                user.Bio,
-                user.ProfilePicturePath,
-                user.IsDeleted, // تم تمرير خاصية IsDeleted هنا كمتغير سادس
-                roles           // المتغير السابع
-            ));
+            result.Add(_mapper.Map<UserAdminResponse>(user) with { Roles = roles });
         }
 
         return result;

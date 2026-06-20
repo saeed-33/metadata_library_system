@@ -1,4 +1,5 @@
-﻿using LibrarySystem.Application.Commands.Items;
+﻿using AutoMapper;
+using LibrarySystem.Application.Commands.Items;
 using LibrarySystem.Application.Interfaces;
 using LibrarySystem.Domain.Entities;
 using MediatR;
@@ -13,8 +14,13 @@ public record UpdateItemCommand(
 public class UpdateItemCommandHandler : IRequestHandler<UpdateItemCommand, bool>
 {
     private readonly IUnitOfWork _unitOfWork;
+    private readonly IMapper _mapper;
 
-    public UpdateItemCommandHandler(IUnitOfWork unitOfWork) => _unitOfWork = unitOfWork;
+    public UpdateItemCommandHandler(IUnitOfWork unitOfWork, IMapper mapper)
+    {
+        _unitOfWork = unitOfWork;
+        _mapper = mapper;
+    }
 
     public async Task<bool> Handle(UpdateItemCommand request, CancellationToken cancellationToken)
     {
@@ -48,7 +54,7 @@ public class UpdateItemCommandHandler : IRequestHandler<UpdateItemCommand, bool>
         }
 
         // 3. Update item basic fields
-        item.TemplateId = request.TemplateId;
+        _mapper.Map(request, item);
 
         // 4. Delete old values
         var oldValues = await _unitOfWork.Values
@@ -59,16 +65,8 @@ public class UpdateItemCommandHandler : IRequestHandler<UpdateItemCommand, bool>
         // 5. Add new values
         foreach (var vReq in request.Values)
         {
-            var newValue = new Value
-            {
-                PropertyId = vReq.PropertyId,
-                ValueText = vReq.ValueText,
-                ValueUri = vReq.ValueUri,
-                ValueResourceId = vReq.ValueResourceId,
-                Type = vReq.Type,
-                Language = vReq.Language,
-                ResourceId = item.Id
-            };
+            var newValue = _mapper.Map<Value>(vReq);
+            newValue.ResourceId = item.Id;
             await _unitOfWork.Values.AddAsync(newValue);
         }
 

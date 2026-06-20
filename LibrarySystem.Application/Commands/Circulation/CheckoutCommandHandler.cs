@@ -1,5 +1,5 @@
+using AutoMapper;
 using LibrarySystem.Application.Interfaces;
-using LibrarySystem.Domain.entities;
 using LibrarySystem.Domain.Entities;
 using MediatR;
 using System;
@@ -11,10 +11,12 @@ namespace LibrarySystem.Application.Commands.Circulation
     public class CheckoutCommandHandler : IRequestHandler<CheckoutCommand, bool>
     {
         private readonly IUnitOfWork _unitOfWork;
+        private readonly IMapper _mapper;
 
-        public CheckoutCommandHandler(IUnitOfWork unitOfWork)
+        public CheckoutCommandHandler(IUnitOfWork unitOfWork, IMapper mapper)
         {
             _unitOfWork = unitOfWork;
+            _mapper = mapper;
         }
 
         public async Task<bool> Handle(CheckoutCommand request, CancellationToken cancellationToken)
@@ -63,14 +65,11 @@ namespace LibrarySystem.Application.Commands.Circulation
             }
 
             // 5. إنشاء سجل الإعارة
-            var borrowRecord = new BorrowRecord
-            {
-                CopyId = copy.Id,
-                PatronId = request.PatronId,
-                BorrowDate = DateTime.UtcNow,
-                DueDate = dueDate,
-                Status = "Active"
-            };
+            var borrowRecord = _mapper.Map<BorrowRecord>(request);
+            borrowRecord.CopyId = copy.Id;
+            borrowRecord.BorrowDate = DateTime.UtcNow;
+            borrowRecord.DueDate = dueDate;
+            borrowRecord.Status = "Active";
 
             // 6. تحديث حالة النسخة إلى "معارة" (1)
             copy.Status = 1;

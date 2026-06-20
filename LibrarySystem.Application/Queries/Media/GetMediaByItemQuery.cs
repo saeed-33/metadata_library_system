@@ -1,6 +1,8 @@
-﻿using LibrarySystem.Application.DTOs.Items;
+﻿using AutoMapper;
+using LibrarySystem.Application.DTOs.Items;
 using LibrarySystem.Application.DTOs.Media;
 using LibrarySystem.Application.Interfaces;
+using LibrarySystem.Domain.Entities;
 using MediatR;
 
 namespace LibrarySystem.Application.Queries.Media;
@@ -10,10 +12,12 @@ public record GetMediaByItemQuery(int ItemId) : IRequest<IEnumerable<MediaRespon
 public class GetMediaByItemQueryHandler : IRequestHandler<GetMediaByItemQuery, IEnumerable<MediaResponse>>
 {
     private readonly IUnitOfWork _unitOfWork;
+    private readonly IMapper _mapper;
 
-    public GetMediaByItemQueryHandler(IUnitOfWork unitOfWork)
+    public GetMediaByItemQueryHandler(IUnitOfWork unitOfWork, IMapper mapper)
     {
         _unitOfWork = unitOfWork;
+        _mapper = mapper;
     }
 
     public async Task<IEnumerable<MediaResponse>> Handle(
@@ -29,30 +33,23 @@ public class GetMediaByItemQueryHandler : IRequestHandler<GetMediaByItemQuery, I
         var mediaIds = mediaList.Select(m => m.Id).ToList();
         var allValues = await _unitOfWork.Values.FindAsync(
             v => mediaIds.Contains(v.ResourceId),
-            v => v.Property!
-        );
+            v => v.Property!);
 
         // 3. Group values by ResourceId
         var valuesByMediaId = allValues
             .GroupBy(v => v.ResourceId)
             .ToDictionary(g => g.Key, g => g.ToList());
 
-        // 4. Build response manually
-        return mediaList.Select(media => new MediaResponse
+        // 4. Map media to response and inject values
+        var response = _mapper.Map<List<MediaResponse>>(mediaList);
+        for (int i = 0; i < mediaList.Count; i++)
         {
-            Id = media.Id,
-            ItemId = media.ItemId,
-            StoragePath = media.StoragePath,
-            FileName = media.FileName,
-            MetadataValues = valuesByMediaId.TryGetValue(media.Id, out var values)
-                ? values.Select(v => new ItemValueResponse
-                {
-                    PropertyId = v.PropertyId,
-                    PropertyLabel = v.Property?.Label ?? string.Empty,
-                    ValueText = v.ValueText,
-                    Language = v.Language
-                }).ToList()
-                : new List<ItemValueResponse>()
-        }).ToList();
+            var values = valuesByMediaId.TryGetValue(mediaList[i].Id, out var v)
+                ? v
+                : new List<Value>();
+            response[i].MetadataValues = _mapper.Map<List<ItemValueResponse>>(values);
+        }
+
+        return response;
     }
 }

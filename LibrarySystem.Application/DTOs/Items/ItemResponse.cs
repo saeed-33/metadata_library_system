@@ -8,6 +8,8 @@ public class ItemResponse
     public int? OwnerId { get; set; }
     public string? OwnerName { get; set; }
     public List<ItemValueResponse> MetadataValues { get; set; } = new();
+    public int TotalCopies { get; set; }
+    public int AvailableCopies { get; set; }
 }
 
 public class ItemValueResponse

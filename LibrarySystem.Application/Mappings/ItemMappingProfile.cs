@@ -29,6 +29,15 @@ public class ItemMappingProfile : Profile
             .ForMember(dest => dest.PropertyLabel,
                 opt => opt.MapFrom(src => src.Property != null ? src.Property.Label : string.Empty));
 
+        // Commands → Entity
+        CreateMap<CreateItemCommand, Item>()
+            .ForMember(dest => dest.Values, opt => opt.Ignore())
+            .ForMember(dest => dest.Type, opt => opt.Ignore());
 
+        CreateMap<UpdateItemCommand, Item>()
+            .ForMember(dest => dest.Values, opt => opt.Ignore())
+            .ForMember(dest => dest.Type, opt => opt.Ignore());
+
+        CreateMap<CreateValueRequest, Value>();
     }
 }

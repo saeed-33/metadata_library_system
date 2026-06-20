@@ -1,6 +1,8 @@
-﻿using LibrarySystem.Application.DTOs.Items;
+﻿using AutoMapper;
+using LibrarySystem.Application.DTOs.Items;
 using LibrarySystem.Application.DTOs.Media;
 using LibrarySystem.Application.Interfaces;
+using LibrarySystem.Domain.Entities;
 using MediatR;
 
 namespace LibrarySystem.Application.Queries.Media;
@@ -10,10 +12,12 @@ public record GetAllMediaWithDeletedQuery() : IRequest<IEnumerable<MediaAdminRes
 public class GetAllMediaWithDeletedQueryHandler : IRequestHandler<GetAllMediaWithDeletedQuery, IEnumerable<MediaAdminResponse>>
 {
     private readonly IUnitOfWork _unitOfWork;
+    private readonly IMapper _mapper;
 
-    public GetAllMediaWithDeletedQueryHandler(IUnitOfWork unitOfWork)
+    public GetAllMediaWithDeletedQueryHandler(IUnitOfWork unitOfWork, IMapper mapper)
     {
         _unitOfWork = unitOfWork;
+        _mapper = mapper;
     }
 
     public async Task<IEnumerable<MediaAdminResponse>> Handle(
@@ -30,34 +34,22 @@ public class GetAllMediaWithDeletedQueryHandler : IRequestHandler<GetAllMediaWit
         var mediaIds = mediaList.Select(m => m.Id).ToList();
         var allValues = await _unitOfWork.Values.FindWithDeletedAsync(
             v => mediaIds.Contains(v.ResourceId),
-            v => v.Property!
-        );
+            v => v.Property!);
 
         // 3. Group values by ResourceId
         var valuesByMediaId = allValues
             .GroupBy(v => v.ResourceId)
             .ToDictionary(g => g.Key, g => g.ToList());
 
-        // 4. Map media to Admin response manually
-        var response = mediaList.Select(media => new MediaAdminResponse
+        // 4. Map media to Admin response and inject values
+        var response = _mapper.Map<List<MediaAdminResponse>>(mediaList);
+        for (int i = 0; i < mediaList.Count; i++)
         {
-            Id = media.Id,
-            ItemId = media.ItemId,
-            StoragePath = media.StoragePath,
-            FileName = media.FileName,
-            IsDeleted = media.IsDeleted, // تمرير حالة الحذف للـ Media
-
-            MetadataValues = valuesByMediaId.TryGetValue(media.Id, out var values)
-                ? values.Select(v => new ItemAdminValueResponse
-                {
-                    PropertyId = v.PropertyId,
-                    PropertyLabel = v.Property?.Label ?? string.Empty,
-                    ValueText = v.ValueText,
-                    Language = v.Language,
-                    IsDeleted = v.IsDeleted // تمرير حالة الحذف للـ Metadata
-                }).ToList()
-                : new List<ItemAdminValueResponse>()
-        }).ToList();
+            var values = valuesByMediaId.TryGetValue(mediaList[i].Id, out var v)
+                ? v
+                : new List<Value>();
+            response[i].MetadataValues = _mapper.Map<List<ItemAdminValueResponse>>(values);
+        }
 
         return response;
     }

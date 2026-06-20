@@ -1,4 +1,5 @@
-﻿using LibrarySystem.Application.DTOs.Users;
+﻿using AutoMapper;
+using LibrarySystem.Application.DTOs.Users;
 using LibrarySystem.Application.Interfaces;
 using MediatR;
 
@@ -10,13 +11,16 @@ public class GetSystemUserByIdQueryHandler : IRequestHandler<GetSystemUserByIdQu
 {
     private readonly IUnitOfWork _unitOfWork;
     private readonly IIdentityService _identityService;
+    private readonly IMapper _mapper;
 
     public GetSystemUserByIdQueryHandler(
         IUnitOfWork unitOfWork,
-        IIdentityService identityService)
+        IIdentityService identityService,
+        IMapper mapper)
     {
         _unitOfWork = unitOfWork;
         _identityService = identityService;
+        _mapper = mapper;
     }
 
     public async Task<UserResponse?> Handle(
@@ -29,13 +33,6 @@ public class GetSystemUserByIdQueryHandler : IRequestHandler<GetSystemUserByIdQu
         var roles = await _identityService
             .GetRolesByExternalIdAsync(user.ExternalId);
 
-        return new UserResponse(
-            user.Id,
-            user.ExternalId,
-            user.FullName,
-            user.Bio,
-            user.ProfilePicturePath,
-            roles
-        );
+        return _mapper.Map<UserResponse>(user) with { Roles = roles };
     }
 }

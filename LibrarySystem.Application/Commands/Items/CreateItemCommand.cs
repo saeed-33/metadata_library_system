@@ -1,4 +1,5 @@
-﻿using LibrarySystem.Application.Interfaces;
+﻿using AutoMapper;
+using LibrarySystem.Application.Interfaces;
 using LibrarySystem.Domain.Entities;
 using MediatR;
 
@@ -22,8 +23,13 @@ public record CreateValueRequest(
 public class CreateItemCommandHandler : IRequestHandler<CreateItemCommand, int>
 {
     private readonly IUnitOfWork _unitOfWork;
+    private readonly IMapper _mapper;
 
-    public CreateItemCommandHandler(IUnitOfWork unitOfWork) => _unitOfWork = unitOfWork;
+    public CreateItemCommandHandler(IUnitOfWork unitOfWork, IMapper mapper)
+    {
+        _unitOfWork = unitOfWork;
+        _mapper = mapper;
+    }
 
     public async Task<int> Handle(CreateItemCommand request, CancellationToken cancellationToken)
     {
@@ -52,11 +58,7 @@ public class CreateItemCommandHandler : IRequestHandler<CreateItemCommand, int>
         }
 
         // 2. Create and save item first to get real Id
-        var item = new Item
-        {
-            TemplateId = request.TemplateId,
-            OwnerId = request.OwnerId
-        };
+        var item = _mapper.Map<Item>(request);
 
         await _unitOfWork.Items.AddAsync(item);
         await _unitOfWork.SaveChangesAsync();
@@ -64,16 +66,8 @@ public class CreateItemCommandHandler : IRequestHandler<CreateItemCommand, int>
         // 3. Add values with validated resource links
         foreach (var vReq in request.Values)
         {
-            var value = new Value
-            {
-                PropertyId = vReq.PropertyId,
-                ValueText = vReq.ValueText,
-                ValueUri = vReq.ValueUri,
-                ValueResourceId = vReq.ValueResourceId,
-                Type = vReq.Type,
-                Language = vReq.Language,
-                ResourceId = item.Id
-            };
+            var value = _mapper.Map<Value>(vReq);
+            value.ResourceId = item.Id;
             await _unitOfWork.Values.AddAsync(value);
         }
 

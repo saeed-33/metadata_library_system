@@ -1,4 +1,5 @@
-﻿using LibrarySystem.Application.Interfaces;
+﻿using AutoMapper;
+using LibrarySystem.Application.Interfaces;
 using LibrarySystem.Domain.Entities;
 using MediatR;
 
@@ -20,10 +21,12 @@ public class UpdateTemplatePropertiesCommandHandler
     : IRequestHandler<UpdateTemplatePropertiesCommand, bool>
 {
     private readonly IUnitOfWork _unitOfWork;
+    private readonly IMapper _mapper;
 
-    public UpdateTemplatePropertiesCommandHandler(IUnitOfWork unitOfWork)
+    public UpdateTemplatePropertiesCommandHandler(IUnitOfWork unitOfWork, IMapper mapper)
     {
         _unitOfWork = unitOfWork;
+        _mapper = mapper;
     }
 
     public async Task<bool> Handle(
@@ -52,14 +55,8 @@ public class UpdateTemplatePropertiesCommandHandler
             if (!restored)
             {
                 // Row doesn't exist at all — truly new, safe to insert
-                var newRelation = new TemplateProperty
-                {
-                    TemplateId = request.TemplateId,
-                    PropertyId = propReq.PropertyId,
-                    IsRequired = propReq.IsRequired,
-                    DisplayOrder = propReq.DisplayOrder,
-                    AlternateLabel = propReq.AlternateLabel
-                };
+                var newRelation = _mapper.Map<TemplateProperty>(propReq);
+                newRelation.TemplateId = request.TemplateId;
                 await _unitOfWork.TemplateProperties.AddAsync(newRelation);
             }
 

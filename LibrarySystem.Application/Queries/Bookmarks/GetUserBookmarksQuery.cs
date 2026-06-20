@@ -1,4 +1,5 @@
-﻿using LibrarySystem.Application.DTOs.Users;
+﻿using AutoMapper;
+using LibrarySystem.Application.DTOs.Users;
 using LibrarySystem.Application.Interfaces;
 using MediatR;
 
@@ -9,12 +10,18 @@ public record GetUserBookmarksQuery(string ExternalUserId) : IRequest<IEnumerabl
 public class GetUserBookmarksQueryHandler : IRequestHandler<GetUserBookmarksQuery, IEnumerable<BookmarksResponse>>
 {
     private readonly IUnitOfWork _unitOfWork;
-    public GetUserBookmarksQueryHandler(IUnitOfWork unitOfWork) => _unitOfWork = unitOfWork;
+    private readonly IMapper _mapper;
+
+    public GetUserBookmarksQueryHandler(IUnitOfWork unitOfWork, IMapper mapper)
+    {
+        _unitOfWork = unitOfWork;
+        _mapper = mapper;
+    }
 
     public async Task<IEnumerable<BookmarksResponse>> Handle(GetUserBookmarksQuery request, CancellationToken cancellationToken)
     {
         var bookmarks = await _unitOfWork.Bookmarks.FindAsync(b => b.UserId == request.ExternalUserId);
 
-        return bookmarks.Select(b => new BookmarksResponse(b.ItemId)).ToList();
+        return _mapper.Map<List<BookmarksResponse>>(bookmarks);
     }
 }

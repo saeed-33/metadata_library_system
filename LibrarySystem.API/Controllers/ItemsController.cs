@@ -40,6 +40,13 @@ public class ItemsController : ControllerBase
         return item == null ? NotFound() : Ok(item);
     }
 
+    [HttpGet("{id:int}/copies")]
+    public async Task<IActionResult> GetWithCopies(int id)
+    {
+        var item = await _mediator.Send(new GetItemWithCopiesQuery(id));
+        return item == null ? NotFound() : Ok(item);
+    }
+
     [HttpPost]
     public async Task<IActionResult> Create(CreateItemCommand command)
     {

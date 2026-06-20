@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using LibrarySystem.Application.Commands.Media;
 using LibrarySystem.Application.DTOs.Media;
 using LibrarySystem.Domain.Entities;
 
@@ -13,5 +14,14 @@ public class MediaMappingProfile : Profile
 
         CreateMap<LibrarySystem.Domain.Entities.Media, MediaAdminResponse>()
            .ForMember(dest => dest.MetadataValues, opt => opt.MapFrom(src => src.Values));
+
+        // Commands → Entity
+        CreateMap<CreateMediaCommand, LibrarySystem.Domain.Entities.Media>()
+            .ForMember(dest => dest.Values, opt => opt.Ignore())
+            .ForMember(dest => dest.Type, opt => opt.Ignore());
+
+        CreateMap<UpdateMediaCommand, LibrarySystem.Domain.Entities.Media>()
+            .ForMember(dest => dest.Values, opt => opt.Ignore())
+            .ForMember(dest => dest.Type, opt => opt.Ignore());
     }
 }

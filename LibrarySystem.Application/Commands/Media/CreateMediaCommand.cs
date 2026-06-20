@@ -1,4 +1,5 @@
-﻿using LibrarySystem.Application.Commands.Items;
+﻿using AutoMapper;
+using LibrarySystem.Application.Commands.Items;
 using LibrarySystem.Application.Interfaces;
 using LibrarySystem.Domain.Entities;
 using MediatR;
@@ -15,18 +16,18 @@ public record CreateMediaCommand(
 public class CreateMediaCommandHandler : IRequestHandler<CreateMediaCommand, int>
 {
     private readonly IUnitOfWork _unitOfWork;
+    private readonly IMapper _mapper;
 
-    public CreateMediaCommandHandler(IUnitOfWork unitOfWork) => _unitOfWork = unitOfWork;
+    public CreateMediaCommandHandler(IUnitOfWork unitOfWork, IMapper mapper)
+    {
+        _unitOfWork = unitOfWork;
+        _mapper = mapper;
+    }
 
     public async Task<int> Handle(CreateMediaCommand request, CancellationToken cancellationToken)
     {
         // 1. Create media object
-        var media = new LibrarySystem.Domain.Entities.Media
-        {
-            ItemId = request.ItemId,
-            StoragePath = request.StoragePath,
-            FileName = request.FileName
-        };
+        var media = _mapper.Map<LibrarySystem.Domain.Entities.Media>(request);
 
         await _unitOfWork.Medias.AddAsync(media);
 
@@ -36,16 +37,8 @@ public class CreateMediaCommandHandler : IRequestHandler<CreateMediaCommand, int
         // 3. Now media.Id is populated — safe to use as FK for Values
         foreach (var vReq in request.Values)
         {
-            var value = new Value
-            {
-                PropertyId = vReq.PropertyId,
-                ValueText = vReq.ValueText,
-                ValueUri = vReq.ValueUri,
-                ValueResourceId = vReq.ValueResourceId,
-                Type = vReq.Type,
-                Language = vReq.Language,
-                ResourceId = media.Id  // ← use Id directly, not navigation property
-            };
+            var value = _mapper.Map<Value>(vReq);
+            value.ResourceId = media.Id;  // ← use Id directly, not navigation property
             await _unitOfWork.Values.AddAsync(value);
         }
 

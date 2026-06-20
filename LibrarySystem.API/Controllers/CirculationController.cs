@@ -1,10 +1,9 @@
-using LibrarySystem.Application.Commands.Bookmarks;
 using LibrarySystem.Application.Commands.Circulation;
-using LibrarySystem.Application.Queries.Bookmarks;
+using LibrarySystem.Application.Queries.Circulation;
+using LibrarySystem.Application.Queries.Patrons;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using System.Security.Claims;
 
 namespace LibrarySystem.API.Controllers;
 
@@ -29,5 +28,26 @@ public class CirculationController : ControllerBase
     {
         var result = await _mediator.Send(command);
         return Ok(new { success = result, message = "تم إرجاع النسخة بنجاح" });
+    }
+
+    [HttpGet("active")]
+    public async Task<IActionResult> GetActiveLoans()
+    {
+        var result = await _mediator.Send(new GetActiveLoansQuery());
+        return Ok(result);
+    }
+
+    [HttpGet("history")]
+    public async Task<IActionResult> GetHistory([FromQuery] int? itemId, [FromQuery] int? patronId)
+    {
+        var result = await _mediator.Send(new GetBorrowHistoryQuery(itemId, patronId));
+        return Ok(result);
+    }
+
+    [HttpGet("overdue")]
+    public async Task<IActionResult> GetOverdue()
+    {
+        var result = await _mediator.Send(new GetOverdueLoansQuery());
+        return Ok(result);
     }
 }

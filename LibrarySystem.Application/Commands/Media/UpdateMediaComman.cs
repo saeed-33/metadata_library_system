@@ -1,4 +1,5 @@
-﻿using LibrarySystem.Application.Commands.Items;
+﻿using AutoMapper;
+using LibrarySystem.Application.Commands.Items;
 using LibrarySystem.Application.Interfaces;
 using LibrarySystem.Domain.Entities;
 using MediatR;
@@ -15,7 +16,13 @@ public record UpdateMediaCommand(
 public class UpdateMediaCommandHandler : IRequestHandler<UpdateMediaCommand, bool>
 {
     private readonly IUnitOfWork _unitOfWork;
-    public UpdateMediaCommandHandler(IUnitOfWork unitOfWork) => _unitOfWork = unitOfWork;
+    private readonly IMapper _mapper;
+
+    public UpdateMediaCommandHandler(IUnitOfWork unitOfWork, IMapper mapper)
+    {
+        _unitOfWork = unitOfWork;
+        _mapper = mapper;
+    }
 
 
     public async Task<bool> Handle(UpdateMediaCommand request, CancellationToken cancellationToken)
@@ -23,8 +30,7 @@ public class UpdateMediaCommandHandler : IRequestHandler<UpdateMediaCommand, boo
         var media = (await _unitOfWork.Medias.FindAsync(m => m.Id == request.Id)).FirstOrDefault();
         if (media == null) return false;
 
-        media.StoragePath = request.StoragePath;
-        media.FileName = request.FileName;
+        _mapper.Map(request, media);
 
         // Save media update first
         _unitOfWork.Medias.Update(media);
@@ -37,16 +43,9 @@ public class UpdateMediaCommandHandler : IRequestHandler<UpdateMediaCommand, boo
         // Add new values with all fields populated
         foreach (var vReq in request.Values)
         {
-            await _unitOfWork.Values.AddAsync(new Value
-            {
-                PropertyId = vReq.PropertyId,
-                ValueText = vReq.ValueText,
-                ValueUri = vReq.ValueUri,
-                ValueResourceId = vReq.ValueResourceId,
-                Type = vReq.Type,     // ← was missing
-                Language = vReq.Language, // ← was missing
-                ResourceId = media.Id
-            });
+            var value = _mapper.Map<Value>(vReq);
+            value.ResourceId = media.Id;
+            await _unitOfWork.Values.AddAsync(value);
         }
 
         await _unitOfWork.SaveChangesAsync();

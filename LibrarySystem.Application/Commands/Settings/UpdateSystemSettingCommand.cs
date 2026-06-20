@@ -1,19 +1,25 @@
+using AutoMapper;
 using LibrarySystem.Application.Interfaces;
-using LibrarySystem.Domain.entities;
 using LibrarySystem.Domain.Entities;
 using MediatR;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace LibrarySystem.Application.Commands.Features
+namespace LibrarySystem.Application.Commands.SystemSettings
 {
    public record UpdateSystemSettingCommand(string Key, string Value) : IRequest<bool>;
 
 public class UpdateSystemSettingHandler : IRequestHandler<UpdateSystemSettingCommand, bool>
 {
     private readonly IUnitOfWork _unitOfWork;
-    public UpdateSystemSettingHandler(IUnitOfWork unitOfWork) => _unitOfWork = unitOfWork;
+    private readonly IMapper _mapper;
+
+    public UpdateSystemSettingHandler(IUnitOfWork unitOfWork, IMapper mapper)
+    {
+        _unitOfWork = unitOfWork;
+        _mapper = mapper;
+    }
 
     public async Task<bool> Handle(UpdateSystemSettingCommand request, CancellationToken ct)
     {
@@ -22,7 +28,7 @@ public class UpdateSystemSettingHandler : IRequestHandler<UpdateSystemSettingCom
 
         if (setting == null)
         {
-            await _unitOfWork.SystemSettings.AddAsync(new SystemSetting { Key = request.Key, Value = request.Value });
+            await _unitOfWork.SystemSettings.AddAsync(_mapper.Map<SystemSetting>(request));
         }
         else
         {

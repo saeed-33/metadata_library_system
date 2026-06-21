@@ -10,6 +10,7 @@ namespace LibrarySystem.API.Controllers;
 
 [ApiController]
 [Route("api/resource-templates")]
+[Authorize]
 public class ResourceTemplatesController : ControllerBase
 {
     private readonly IMediator _mediator;
@@ -72,6 +73,8 @@ public class ResourceTemplatesController : ControllerBase
     }
 
     [HttpDelete("{id:int}")]
+    [Authorize(Roles = SystemRoles.Admin)]
+
     public async Task<IActionResult> Delete(int id)
     {
         var result = await _mediator.Send(new DeleteResourceTemplateCommand(id));
@@ -89,7 +92,9 @@ public class ResourceTemplatesController : ControllerBase
     }
 
     [HttpPut("Undelet/{id:int}")]
-    public async Task<IActionResult> Undelet(int id, UndeleteResourceTemplateCommand command)
+    [Authorize(Roles = SystemRoles.Admin)]
+
+    public async Task<IActionResult> Undelete(int id, UndeleteResourceTemplateCommand command)
     {
         if (id != command.Id)
             return BadRequest("URL id does not match command id.");

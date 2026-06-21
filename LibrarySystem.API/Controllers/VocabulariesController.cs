@@ -11,6 +11,7 @@ namespace LibrarySystem.API.Controllers;
 
 [ApiController]
 [Route("api/vocabularies")]
+[Authorize]
 public class VocabulariesController : ControllerBase
 {
     private readonly IMediator _mediator;
@@ -61,13 +62,16 @@ public class VocabulariesController : ControllerBase
     }
 
     [HttpDelete("{id:int}")]
+    [Authorize(Roles = SystemRoles.Admin)]
     public async Task<IActionResult> Delete(int id)
     {
         var deleted = await _mediator.Send(new DeleteVocabularyCommand(id));
         return deleted ? NoContent() : NotFound();
     }
+    
     [HttpPut("Undelet/{id:int}")]
-    public async Task<IActionResult> Undelet(int id, UndeleteVocabularyCommand command)
+    [Authorize(Roles = SystemRoles.Admin)]
+    public async Task<IActionResult> Undelete(int id, UndeleteVocabularyCommand command)
     {
         if (id != command.Id)
             return BadRequest("URL id does not match command id.");

@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace LibrarySystem.API.Controllers;
 
 [ApiController]
+[Authorize]
 [Route("api/item-sets")]
 public class ItemSetsController : ControllerBase
 {
@@ -29,7 +30,6 @@ public class ItemSetsController : ControllerBase
 
     [HttpGet("WithDeleted")]
     [Authorize(Roles = SystemRoles.Admin)]
-
     public async Task<IActionResult> GetAllWithDeleted()
     {
         var itemSets = await _mediator.Send(new GetAllItemSetsWithDeletedQuery());
@@ -69,6 +69,7 @@ public class ItemSetsController : ControllerBase
     }
 
     [HttpDelete("{id:int}")]
+    [Authorize(Roles = SystemRoles.Admin)]
     public async Task<IActionResult> Delete(int id)
     {
         var deleted = await _mediator.Send(new DeleteItemSetCommand(id));
@@ -89,7 +90,8 @@ public class ItemSetsController : ControllerBase
         return removed ? NoContent() : NotFound();
     }
     [HttpPut("Undelet/{id:int}")]
-    public async Task<IActionResult> Undelet(int id, UndeleteItemSetCommand command)
+    [Authorize(Roles = SystemRoles.Admin)]
+    public async Task<IActionResult> Undelete(int id, UndeleteItemSetCommand command)
     {
         if (id != command.Id)
             return BadRequest("URL id does not match command id.");

@@ -1,0 +1,265 @@
+\documentclass[12pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[arabic]{babel}
+\usepackage{geometry}
+\usepackage{hyperref}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{enumitem}
+
+\geometry{margin=2.5cm}
+
+\definecolor{codegreen}{rgb}{0,0.6,0}
+\definecolor{codegray}{rgb}{0.5,0.5,0.5}
+\definecolor{codepurple}{rgb}{0.58,0,0.82}
+\definecolor{backcolour}{rgb}{0.97,0.97,0.95}
+
+\lstdefinestyle{mystyle}{
+    backgroundcolor=\color{backcolour},
+    commentstyle=\color{codegreen},
+    keywordstyle=\color{blue},
+    numberstyle=\tiny\color{codegray},
+    stringstyle=\color{codepurple},
+    basicstyle=\ttfamily\small,
+    breakatwhitespace=false,
+    breaklines=true,
+    captionpos=b,
+    keepspaces=true,
+    numbers=left,
+    numbersep=5pt,
+    showspaces=false,
+    showstringspaces=false,
+    showtabs=false,
+    tabsize=2,
+    frame=single
+}
+
+\lstset{style=mystyle}
+
+\title{\textbf{تقرير التعديلات على المشروع}\\
+\large استجابة لملاحظات المراجع}
+\author{}
+\date{\today}
+
+\begin{document}
+
+\maketitle
+
+\section*{ملخص التنفيذ}
+تم تنفيذ جميع الملاحظات الواردة من المراجع على نظام إدارة المكتبة (CQRS). تم التأكد من نجاح البناء (\texttt{dotnet build}) بدون أي أخطاء برمجية.
+
+\tableofcontents
+\newpage
+
+%----------------------------------------------------------
+\section{استخدام FluentValidation بدلاً من \texttt{throw new Exception}}
+%----------------------------------------------------------
+
+\subsection{ملفات الـ Validators الجديدة}
+تم إنشاءValidators للأوامر الجديدة:
+
+\begin{itemize}[leftmargin=*]
+    \item \texttt{LibrarySystem.Application/Validators/Patrons/CreatePatronCommandValidator.cs}
+    \item \texttt{LibrarySystem.Application/Validators/Patrons/UpdatePatronCommandValidator.cs}
+    \item \texttt{LibrarySystem.Application/Validators/ItemCopies/CreateItemCopyCommandValidator.cs}
+    \item \texttt{LibrarySystem.Application/Validators/ItemCopies/UpdateItemCopyCommandValidator.cs}
+    \item \texttt{LibrarySystem.Application/Validators/Circulation/ReturnCommandValidator.cs}
+\end{itemize}
+
+\subsection{تسجيل الـ Validators في Dependency Injection}
+تم تعديل الملف:
+\begin{lstlisting}[language={[Sharp]C}, caption={ApplicationServiceRegistration.cs}]
+services.AddValidatorsFromAssembly(Assembly.GetExecutingAssembly());
+\end{lstlisting}
+
+\subsection{إضافة ValidationBehavior}
+تم إنشاء ملف جديد:
+\begin{lstlisting}[language={[Sharp]C}, caption={LibrarySystem.Application/Behaviors/ValidationBehavior.cs}]
+public class ValidationBehavior<TRequest, TResponse>
+    : IPipelineBehavior<TRequest, TResponse>
+    where TRequest : notnull
+{
+    private readonly IEnumerable<IValidator<TRequest>> _validators;
+
+    public ValidationBehavior(IEnumerable<IValidator<TRequest>> validators)
+    {
+        _validators = validators;
+    }
+
+    public async Task<TResponse> Handle(
+        TRequest request,
+        RequestHandlerDelegate<TResponse> next,
+        CancellationToken cancellationToken)
+    {
+        if (!_validators.Any())
+            return await next();
+
+        var context = new ValidationContext<TRequest>(request);
+        var validationResults = await Task.WhenAll(
+            _validators.Select(v => v.ValidateAsync(context, cancellationToken)));
+
+        var failures = validationResults
+            .SelectMany(r => r.Errors)
+            .Where(f => f != null)
+            .ToList();
+
+        if (failures.Any())
+            throw new ValidationException(failures);
+
+        return await next();
+    }
+}
+\end{lstlisting}
+
+\subsection{استبدال الاستثناءات العامة}
+تم استبدال \texttt{throw new Exception(...)} في ملفات الـ Handlers:
+
+\begin{itemize}[leftmargin=*]
+    \item \textbf{CreatePatronCommand.cs}: تم نقل التحقق من عدم تكرار الرقم الوطني إلى الـ Validator.
+    \item \textbf{UpdatePatronCommand.cs}: تغيير \texttt{throw new Exception} إلى \texttt{return false;} عند عدم وجود المستعير.
+    \item \textbf{DeletePatronCommand.cs}: تغيير \texttt{throw new Exception} إلى \texttt{throw new InvalidOperationException}.
+    \item \textbf{CreateItemCopyCommand.cs}: تم نقل التحقق من Barcode ووجود الكتاب إلى الـ Validator.
+    \item \textbf{UpdateItemCopyCommand.cs}: تغيير \texttt{throw new Exception} إلى \texttt{return false;}.
+    \item \textbf{CheckoutCommandHandler.cs}: جميع \texttt{throw new Exception} أصبحت \texttt{throw new InvalidOperationException}.
+    \item \textbf{ReturnCommand.cs}: جميع \texttt{throw new Exception} أصبحت \texttt{throw new InvalidOperationException}.
+\end{itemize}
+
+\textbf{النتيجة}: لم يعد هناك أي \texttt{throw new Exception} في الـ Solution بأكمله.
+
+\subsection{تحسين Exception Handling Middleware}
+تم تعديل \texttt{ExceptionHandlingMiddleware.cs} ليعالج:
+\begin{itemize}[leftmargin=*]
+    \item \texttt{ValidationException} → \texttt{400 Bad Request}
+    \item \texttt{InvalidOperationException} → \texttt{400 Bad Request}
+\end{itemize}
+كما تم تسجيله في \texttt{Program.cs}:
+\begin{lstlisting}[language={[Sharp]C}]
+app.UseMiddleware<ExceptionHandlingMiddleware>();
+\end{lstlisting}
+
+%----------------------------------------------------------
+\section{نقل الـ DTOs إلى المجلد الصحيح}
+%----------------------------------------------------------
+
+\subsection{ملفات DTOs الجديدة}
+تم إنشاء الملفات التالية:
+
+\begin{itemize}[leftmargin=*]
+    \item \texttt{LibrarySystem.Application/DTOs/Values/CreateValueRequest.cs}
+    \item \texttt{LibrarySystem.Application/DTOs/ResourceTemplates/TemplatePropertyRequest.cs}
+    \item \texttt{LibrarySystem.Application/DTOs/Media/UploadMediaRequestDto.cs}
+\end{itemize}
+
+\subsection{تحديث الملفات المستخدمة}
+تم تحديث الملفات التالية لتستخدم الـ DTOs من مواقعها الجديدة:
+
+\begin{itemize}[leftmargin=*]
+    \item \texttt{CreateItemCommand.cs}: إزالة \texttt{CreateValueRequest} المدمج.
+    \item \texttt{CreateMediaCommand.cs}: إضافة \texttt{using LibrarySystem.Application.DTOs.Values}.
+    \item \texttt{UpdateItemCommand.cs}: إضافة \texttt{using} وإصلاح النقص في \texttt{namespace}.
+    \item \texttt{UpdateMediaComman.cs}: إضافة \texttt{using}.
+    \item \texttt{UpdateTemplatePropertiesCommand.cs}: إزالة \texttt{TemplatePropertyRequest} المدمج.
+    \item \texttt{MediaController.cs}: إزالة \texttt{UploadMediaRequestDto} المدمج.
+    \item \texttt{ItemMappingProfile.cs}: إضافة \texttt{using LibrarySystem.Application.DTOs.Values}.
+    \item \texttt{PropertiesController.cs}: تحديث \texttt{using} الخاص بـ \texttt{GetSearchableFieldsQuery}.
+\end{itemize}
+
+\subsection{نقل الـ Query}
+تم نقل الملف:
+\begin{itemize}[leftmargin=*]
+    \item من: \texttt{LibrarySystem.Application/Commands/Properties/GetSearchableFieldsQuery.cs}
+    \item إلى: \texttt{LibrarySystem.Application/Queries/Properties/GetSearchableFieldsQuery.cs}
+\end{itemize}
+
+%----------------------------------------------------------
+\section{تعديلات الـ Mappings}
+%----------------------------------------------------------
+
+تم إنشاء أوامر واستعلامات جديدة تستخدم الـ Mapping Profiles الموجودة:
+
+\begin{itemize}[leftmargin=*]
+    \item \texttt{GetAllPatronsWithDeletedQuery} تستخدم \texttt{Patron -> PatronAdminResponse}
+    \item \texttt{GetAllItemCopiesWithDeletedQuery} تستخدم \texttt{ItemCopy -> ItemCopyAdminResponse}
+    \item \texttt{UndeletePatronCommand} و \texttt{UndeleteItemCopyCommand} تستخدمان \texttt{FindWithDeletedAsync}
+\end{itemize}
+
+%----------------------------------------------------------
+\section{تعديلات الـ Authorization}
+%----------------------------------------------------------
+
+\subsection{إضافة \texttt{[Authorize]} للـ Controllers الناقصة}
+تم إضافة \texttt{[Authorize]} على مستوى الـ Class للـ Controllers التالية:
+
+\begin{itemize}[leftmargin=*]
+    \item \texttt{ItemsController}
+    \item \texttt{ItemCopiesController}
+    \item \texttt{MediaController}
+    \item \texttt{ItemSetsController}
+    \item \texttt{PropertiesController}
+    \item \texttt{ResourceTemplatesController}
+    \item \texttt{VocabulariesController}
+    \item \texttt{FilesController}
+\end{itemize}
+
+\subsection{حماية Undelete بصلاحية Admin}
+تم إضافة \texttt{[Authorize(Roles = SystemRoles.Admin)]} على جميع نقاط النهاية \texttt{Undelet/Undelete}:
+
+\begin{itemize}[leftmargin=*]
+    \item \texttt{ItemsController}
+    \item \texttt{ItemSetsController}
+    \item \texttt{MediaController}
+    \item \texttt{PropertiesController}
+    \item \texttt{ResourceTemplatesController}
+    \item \texttt{VocabulariesController}
+    \item \texttt{PatronsController} (الجديد)
+    \item \texttt{ItemCopiesController} (الجديد)
+\end{itemize}
+
+%----------------------------------------------------------
+\section{إضافة \texttt{GET AllWithDeleted} و \texttt{PUT Undelete}}
+%----------------------------------------------------------
+
+\subsection{PatronsController}
+تم إضافة:
+\begin{itemize}[leftmargin=*]
+    \item \texttt{GET api/patrons/AllWithDeleted} → \texttt{GetAllPatronsWithDeletedQuery}
+    \item \texttt{PUT api/patrons/Undelete/{id}} → \texttt{UndeletePatronCommand}
+\end{itemize}
+
+\subsection{ItemCopiesController}
+تم إضافة:
+\begin{itemize}[leftmargin=*]
+    \item \texttt{GET api/item-copies/AllWithDeleted} → \texttt{GetAllItemCopiesWithDeletedQuery}
+    \item \texttt{PUT api/item-copies/Undelete/{id}} → \texttt{UndeleteItemCopyCommand}
+\end{itemize}
+
+\subsection{ملفات Commands/Queries الجديدة}
+\begin{itemize}[leftmargin=*]
+    \item \texttt{LibrarySystem.Application/Queries/Patrons/GetAllPatronsWithDeletedQuery.cs}
+    \item \texttt{LibrarySystem.Application/Commands/Patrons/UndeletePatronCommand.cs}
+    \item \texttt{LibrarySystem.Application/Queries/ItemCopies/GetAllItemCopiesWithDeletedQuery.cs}
+    \item \texttt{LibrarySystem.Application/Commands/ItemCopies/UndeleteItemCopyCommand.cs}
+\end{itemize}
+
+%----------------------------------------------------------
+\section{إصلاحات إضافية}
+%----------------------------------------------------------
+
+\begin{itemize}[leftmargin=*]
+    \item إصلاح \texttt{namespace} المفقود في \texttt{UpdateItemCommand.cs} (كان في \texttt{global namespace}).
+    \item إصلاح \texttt{warning} الـ null reference في \texttt{MediaController.cs} عند Deserialize الـ \texttt{ValuesJson}.
+    \item ترتيب \texttt{using statements} في الملفات المعدلة.
+\end{itemize}
+
+%----------------------------------------------------------
+\section{نتيجة البناء}
+%----------------------------------------------------------
+
+تم تنفيذ الأمر:
+\begin{lstlisting}[language=bash]
+dotnet build LibrarySystem.sln
+\end{lstlisting}
+
+\textbf{النتيجة}: نجاح البناء بدون أخطاء (\texttt{0 Error(s)}). تبقت بعض التحذيرات القديمة المتعلقة بثغرات معروفة في حزم \texttt{AutoMapper} و \texttt{SixLabors.ImageSharp}.
+
+\end{document}

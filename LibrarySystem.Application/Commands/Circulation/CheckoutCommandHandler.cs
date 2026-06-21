@@ -26,25 +26,25 @@ namespace LibrarySystem.Application.Commands.Circulation
             var allCopies = await _unitOfWork.ItemCopies.GetAllAsync();
             var copy = allCopies.FirstOrDefault(c => c.Barcode == request.Barcode);
 
-            if (copy == null) throw new Exception("النسخة غير موجودة.");
+            if (copy == null) throw new InvalidOperationException("النسخة غير موجودة.");
 
             // 2. التحقق من حالة النسخة (يجب أن تكون 0: Available)
-            if (copy.Status != 0) throw new Exception("هذه النسخة غير متاحة حالياً (معارة أو تحت الصيانة).");
+            if (copy.Status != 0) throw new InvalidOperationException("هذه النسخة غير متاحة حالياً (معارة أو تحت الصيانة).");
 
             // 3. التحقق من سياسة الإعارة للقالب
             var item = await _unitOfWork.Items.GetByIdAsync(copy.ItemId);
 
             // التحقق من أن الكتاب موجود أولاً
-            if (item == null) throw new Exception("الكتاب غير موجود.");
+            if (item == null) throw new InvalidOperationException("الكتاب غير موجود.");
 
             // التحقق من أن القالب مرتبط بالكتاب قبل استخدامه
-            if (!item.TemplateId.HasValue) throw new Exception("هذا الكتاب غير مرتبط بقالب مصادر.");
+            if (!item.TemplateId.HasValue) throw new InvalidOperationException("هذا الكتاب غير مرتبط بقالب مصادر.");
 
             // الآن نرسل القيمة بعد التأكد أنها ليست Null باستخدام .Value
             var template = await _unitOfWork.ResourceTemplates.GetByIdAsync(item.TemplateId.Value);
 
             if (template == null || !template.IsBorrowable)
-                throw new Exception("هذا الصنف مخصص للمراجع فقط ولا يُسمح بإعارته.");
+                throw new InvalidOperationException("هذا الصنف مخصص للمراجع فقط ولا يُسمح بإعارته.");
 
             // 4. الحساب الذكي لتاريخ الاستحقاق (Due Date)
             DateTime dueDate;

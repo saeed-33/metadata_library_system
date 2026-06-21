@@ -1,9 +1,10 @@
 ﻿using AutoMapper;
-using LibrarySystem.Application.Commands.Items;
+using LibrarySystem.Application.DTOs.Values;
 using LibrarySystem.Application.Interfaces;
 using LibrarySystem.Domain.Entities;
 using MediatR;
 
+namespace LibrarySystem.Application.Commands.Items;
 
 public record UpdateItemCommand(
     int Id,

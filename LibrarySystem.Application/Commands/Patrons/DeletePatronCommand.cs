@@ -23,7 +23,7 @@ public class DeletePatronHandler : IRequestHandler<DeletePatronCommand, bool>
         // التحقق مما إذا كان لديه إعارات نشطة قبل الحذف
         var records = await _unitOfWork.BorrowRecords.GetAllAsync();
         if (records.Any(r => r.PatronId == request.Id && r.ReturnDate == null))
-            throw new Exception("لا يمكن حذف المستعير لأن لديه كتب لم يتم إرجاعها بعد.");
+            throw new InvalidOperationException("لا يمكن حذف المستعير لأن لديه كتب لم يتم إرجاعها بعد.");
 
          _unitOfWork.Patrons.Delete(patron);
         await _unitOfWork.SaveChangesAsync();

@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace LibrarySystem.API.Controllers;
 
+[Authorize]
 [ApiController]
 [Route("api/item-sets")]
 public class ItemSetsController : ControllerBase
@@ -89,6 +90,7 @@ public class ItemSetsController : ControllerBase
         return removed ? NoContent() : NotFound();
     }
     [HttpPut("Undelet/{id:int}")]
+    [Authorize(Roles = SystemRoles.Admin)]
     public async Task<IActionResult> Undelet(int id, UndeleteItemSetCommand command)
     {
         if (id != command.Id)

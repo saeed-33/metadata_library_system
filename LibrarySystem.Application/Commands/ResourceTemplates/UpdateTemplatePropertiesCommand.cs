@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using LibrarySystem.Application.DTOs.ResourceTemplates;
 using LibrarySystem.Application.Interfaces;
 using LibrarySystem.Domain.Entities;
 using MediatR;
@@ -9,13 +10,6 @@ public record UpdateTemplatePropertiesCommand(
     int TemplateId,
     List<TemplatePropertyRequest> Properties
 ) : IRequest<bool>;
-
-public record TemplatePropertyRequest(
-    int PropertyId,
-    bool IsRequired,
-    int DisplayOrder,
-    string? AlternateLabel
-);
 
 public class UpdateTemplatePropertiesCommandHandler
     : IRequestHandler<UpdateTemplatePropertiesCommand, bool>

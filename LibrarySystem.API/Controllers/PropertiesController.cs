@@ -1,4 +1,3 @@
-using LibrarySystem.Application.Commands.Media;
 using LibrarySystem.Application.Commands.Properties;
 using LibrarySystem.Application.Queries.Properties;
 using LibrarySystem.Domain.common;
@@ -8,6 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace LibrarySystem.API.Controllers;
 
+[Authorize]
 [ApiController]
 [Route("api/properties")]
 public class PropertiesController : ControllerBase
@@ -78,6 +78,7 @@ public class PropertiesController : ControllerBase
     }
 
     [HttpPut("Undelet/{id:int}")]
+    [Authorize(Roles = SystemRoles.Admin)]
     public async Task<IActionResult> Undelet(int id, UndeletePropertyCommand command)
     {
         if (id != command.Id)

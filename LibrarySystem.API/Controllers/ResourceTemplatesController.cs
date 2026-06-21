@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace LibrarySystem.API.Controllers;
 
+[Authorize]
 [ApiController]
 [Route("api/resource-templates")]
 public class ResourceTemplatesController : ControllerBase
@@ -89,6 +90,7 @@ public class ResourceTemplatesController : ControllerBase
     }
 
     [HttpPut("Undelet/{id:int}")]
+    [Authorize(Roles = SystemRoles.Admin)]
     public async Task<IActionResult> Undelet(int id, UndeleteResourceTemplateCommand command)
     {
         if (id != command.Id)

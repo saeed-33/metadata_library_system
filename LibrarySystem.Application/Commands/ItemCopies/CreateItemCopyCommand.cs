@@ -23,18 +23,11 @@ namespace LibrarySystem.Application.Commands.ItemCopies
 
         public async Task<int> Handle(CreateItemCopyCommand request, CancellationToken ct)
         {
-            // التحقق من الباركود
-            var copies = await _unitOfWork.ItemCopies.GetAllAsync();
-            if (copies.Any(c => c.Barcode == request.Barcode))
-                throw new Exception("هذا الباركود مستخدم مسبقاً.");
-
-            // التحقق من الكتاب والقالب
             var item = await _unitOfWork.Items.GetByIdAsync(request.ItemId);
-            // التحقق من أن الكتاب موجود أولاً
-            if (item == null) throw new Exception("الكتاب غير موجود.");
+            if (item == null) return 0;
 
-            // التحقق من أن القالب مرتبط بالكتاب قبل استخدامه
-            if (!item.TemplateId.HasValue) throw new Exception("هذا الكتاب غير مرتبط بقالب مصادر.");
+            if (!item.TemplateId.HasValue)
+                throw new InvalidOperationException("هذا الكتاب غير مرتبط بقالب مصادر.");
 
             // الآن نرسل القيمة بعد التأكد أنها ليست Null باستخدام .Value
             var template = await _unitOfWork.ResourceTemplates.GetByIdAsync(item.TemplateId.Value);

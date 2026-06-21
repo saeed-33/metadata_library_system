@@ -1,12 +1,13 @@
 using LibrarySystem.Application.Commands.Patrons;
 using LibrarySystem.Application.Queries.Patrons;
+using LibrarySystem.Domain.common;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace LibrarySystem.API.Controllers;
 
-[Authorize] // إجباري أن يكون المستخدم مسجل الدخول (يمتلك Token)
+[Authorize]
 [ApiController]
 [Route("api/[controller]")]
 public class PatronsController : ControllerBase
@@ -18,6 +19,14 @@ public class PatronsController : ControllerBase
     public async Task<IActionResult> GetAll([FromQuery] string? search)
     {
         var result = await _mediator.Send(new GetPatronsQuery(search));
+        return Ok(result);
+    }
+
+    [HttpGet("AllWithDeleted")]
+    [Authorize(Roles = SystemRoles.Admin)]
+    public async Task<IActionResult> GetAllWithDeleted()
+    {
+        var result = await _mediator.Send(new GetAllPatronsWithDeletedQuery());
         return Ok(result);
     }
 
@@ -50,5 +59,16 @@ public class PatronsController : ControllerBase
     {
         var deleted = await _mediator.Send(new DeletePatronCommand(id));
         return deleted ? NoContent() : NotFound();
+    }
+
+    [HttpPut("Undelete/{id:int}")]
+    [Authorize(Roles = SystemRoles.Admin)]
+    public async Task<IActionResult> Undelete(int id, UndeletePatronCommand command)
+    {
+        if (id != command.Id)
+            return BadRequest("URL id does not match command id.");
+
+        var updated = await _mediator.Send(command);
+        return updated ? NoContent() : NotFound();
     }
 }

@@ -19,12 +19,12 @@ public class ReturnCommandHandler : IRequestHandler<ReturnCommand, bool>
     {
         var allCopies = await _unitOfWork.ItemCopies.GetAllAsync();
         var copy = allCopies.FirstOrDefault(c => c.Barcode == request.Barcode);
-        if (copy == null) throw new Exception("النسخة غير موجودة.");
+        if (copy == null) throw new InvalidOperationException("النسخة غير موجودة.");
 
         var allRecords = await _unitOfWork.BorrowRecords.GetAllAsync();
         var activeRecord = allRecords.FirstOrDefault(r => r.CopyId == copy.Id && r.ReturnDate == null);
         
-        if (activeRecord == null) throw new Exception("لا يوجد سجل إعارة نشط لهذه النسخة.");
+        if (activeRecord == null) throw new InvalidOperationException("لا يوجد سجل إعارة نشط لهذه النسخة.");
 
         // تحديث السجل
         activeRecord.ReturnDate = DateTime.UtcNow;

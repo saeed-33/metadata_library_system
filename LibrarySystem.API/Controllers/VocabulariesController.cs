@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace LibrarySystem.API.Controllers;
 
+[Authorize]
 [ApiController]
 [Route("api/vocabularies")]
 public class VocabulariesController : ControllerBase
@@ -67,6 +68,7 @@ public class VocabulariesController : ControllerBase
         return deleted ? NoContent() : NotFound();
     }
     [HttpPut("Undelet/{id:int}")]
+    [Authorize(Roles = SystemRoles.Admin)]
     public async Task<IActionResult> Undelet(int id, UndeleteVocabularyCommand command)
     {
         if (id != command.Id)

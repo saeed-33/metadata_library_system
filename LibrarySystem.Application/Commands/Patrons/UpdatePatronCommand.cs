@@ -24,7 +24,7 @@ public class UpdatePatronHandler : IRequestHandler<UpdatePatronCommand, bool>
     public async Task<bool> Handle(UpdatePatronCommand request, CancellationToken ct)
     {
         var patron = await _unitOfWork.Patrons.GetByIdAsync(request.Id);
-        if (patron == null) throw new Exception("المستعير غير موجود.");
+        if (patron == null) return false;
 
         _mapper.Map(request, patron);
 

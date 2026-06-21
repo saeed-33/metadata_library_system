@@ -1,4 +1,5 @@
 using System.Net;
+using FluentValidation;
 using Microsoft.AspNetCore.Mvc;
 
 namespace LibrarySystem.API.Middleware;
@@ -29,11 +30,13 @@ public class ExceptionHandlingMiddleware
                 throw;
             }
 
+            var (statusCode, title, detail) = MapException(exception);
+
             var problem = new ProblemDetails
             {
-                Status = (int)HttpStatusCode.InternalServerError,
-                Title = "An unexpected error occurred.",
-                Detail = "The request could not be completed.",
+                Status = statusCode,
+                Title = title,
+                Detail = detail,
                 Instance = context.Request.Path
             };
 
@@ -41,5 +44,26 @@ public class ExceptionHandlingMiddleware
             context.Response.ContentType = "application/problem+json";
             await context.Response.WriteAsJsonAsync(problem);
         }
+    }
+
+    private static (int StatusCode, string Title, string Detail) MapException(Exception exception)
+    {
+        return exception switch
+        {
+            ValidationException validationEx => (
+                (int)HttpStatusCode.BadRequest,
+                "Validation failed.",
+                string.Join("; ", validationEx.Errors.Select(e => e.ErrorMessage))),
+
+            InvalidOperationException invalidOpEx => (
+                (int)HttpStatusCode.BadRequest,
+                "Invalid operation.",
+                invalidOpEx.Message),
+
+            _ => (
+                (int)HttpStatusCode.InternalServerError,
+                "An unexpected error occurred.",
+                "The request could not be completed.")
+        };
     }
 }

@@ -57,15 +57,12 @@ namespace LibrarySystem.DataAccess.Mappings
             CreateMap<Patron, PatronModel>().ReverseMap();
 
             // 3. نسخ العناصر
-            CreateMap<ItemCopy, ItemCopyModel>()
-                .ReverseMap()
-                .ForMember(dest => dest.Item, opt => opt.Ignore()); // تجاهل كائن الـ Item الأساسي لمنع Circular Reference
+            // لا نتجاهل Item هنا لأن استعلامات الإعارة تحتاج الوصول إلى عنوان/معرف العنصر الأب.
+            CreateMap<ItemCopy, ItemCopyModel>().ReverseMap().MaxDepth(2);
 
             // 4. سجل الإعارة
-            CreateMap<BorrowRecord, BorrowRecordModel>()
-                .ReverseMap()
-                .ForMember(dest => dest.Copy, opt => opt.Ignore())
-                .ForMember(dest => dest.Patron, opt => opt.Ignore());
+            // لا نتجاهل Copy/Patron هنا لأن DTOs الإعارة تعتمد على الباركود واسم المستعير.
+            CreateMap<BorrowRecord, BorrowRecordModel>().ReverseMap().MaxDepth(2);
 
             // ==========================================
 

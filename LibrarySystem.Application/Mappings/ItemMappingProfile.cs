@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using LibrarySystem.Application.Commands.Items;
 using LibrarySystem.Application.DTOs.Items;
+using LibrarySystem.Application.DTOs.Values;
 using LibrarySystem.Domain.Entities;
 
 namespace LibrarySystem.Application.Mappings;

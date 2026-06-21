@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace LibrarySystem.API.Controllers;
 
+[Authorize]
 [ApiController]
 [Route("api/items")]
 public class ItemsController : ControllerBase
@@ -65,6 +66,7 @@ public class ItemsController : ControllerBase
     }
 
     [HttpPut("Undelet/{id:int}")]
+    [Authorize(Roles = SystemRoles.Admin)]
     public async Task<IActionResult> Undelet(int id, UndeletItemCommand command)
     {
         if (id != command.Id)

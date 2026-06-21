@@ -12,6 +12,7 @@ namespace LibrarySystem.API.Controllers;
 
 [ApiController]
 [Route("api/media")]
+[Authorize]
 public class MediaController : ControllerBase
 {
     private readonly IMediator _mediator;
@@ -54,6 +55,8 @@ public class MediaController : ControllerBase
     }
 
     [HttpDelete("{id:int}")]
+    [Authorize(Roles = SystemRoles.Admin)]
+
     public async Task<IActionResult> Delete(int id)
     {
         var deleted = await _mediator.Send(new DeleteMediaCommand(id));
@@ -125,7 +128,9 @@ public class MediaController : ControllerBase
     }
 
     [HttpPut("Undelet/{id:int}")]
-    public async Task<IActionResult> Undelet(int id, UndeleteMediaCommand command)
+    [Authorize(Roles = SystemRoles.Admin)]
+
+    public async Task<IActionResult> Undelete(int id, UndeleteMediaCommand command)
     {
         if (id != command.Id)
             return BadRequest("URL id does not match command id.");

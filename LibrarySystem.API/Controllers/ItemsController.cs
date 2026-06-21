@@ -9,6 +9,7 @@ namespace LibrarySystem.API.Controllers;
 
 [ApiController]
 [Route("api/items")]
+[Authorize]
 public class ItemsController : ControllerBase
 {
     private readonly IMediator _mediator;
@@ -65,7 +66,9 @@ public class ItemsController : ControllerBase
     }
 
     [HttpPut("Undelet/{id:int}")]
-    public async Task<IActionResult> Undelet(int id, UndeletItemCommand command)
+    [Authorize(Roles = SystemRoles.Admin)]
+
+    public async Task<IActionResult> Undelete(int id, UndeletItemCommand command)
     {
         if (id != command.Id)
             return BadRequest("URL id does not match command id.");
@@ -75,6 +78,8 @@ public class ItemsController : ControllerBase
     }
 
     [HttpDelete("{id:int}")]
+    [Authorize(Roles = SystemRoles.Admin)]
+
     public async Task<IActionResult> Delete(int id)
     {
         var deleted = await _mediator.Send(new DeleteItemCommand(id));

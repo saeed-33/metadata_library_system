@@ -10,6 +10,7 @@ namespace LibrarySystem.API.Controllers;
 
 [ApiController]
 [Route("api/properties")]
+[Authorize]
 public class PropertiesController : ControllerBase
 {
     private readonly IMediator _mediator;
@@ -30,7 +31,6 @@ public class PropertiesController : ControllerBase
 
     [HttpGet("WithDeleted")]
     [Authorize(Roles = SystemRoles.Admin)]
-
     public async Task<IActionResult> GetAllWithDeleted()
     {
         var properties = await _mediator.Send(new GetAllPropertiesWithDeletedQuery());
@@ -71,14 +71,17 @@ public class PropertiesController : ControllerBase
     }
 
     [HttpDelete("{id:int}")]
+    [Authorize(Roles = SystemRoles.Admin)]
     public async Task<IActionResult> Delete(int id)
     {
         var deleted = await _mediator.Send(new DeletePropertyCommand(id));
         return deleted ? NoContent() : NotFound();
     }
 
+
     [HttpPut("Undelet/{id:int}")]
-    public async Task<IActionResult> Undelet(int id, UndeletePropertyCommand command)
+    [Authorize(Roles = SystemRoles.Admin)]
+    public async Task<IActionResult> Undelete(int id, UndeletePropertyCommand command)
     {
         if (id != command.Id)
             return BadRequest("URL id does not match command id.");

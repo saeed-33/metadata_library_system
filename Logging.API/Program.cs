@@ -6,6 +6,11 @@ using Logging.Infrastructure.Repositories;
 using Logging.Infrastructure.Services;
 using LoggingService.Application.IServices;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Authentication.JwtBearer; // Added
+using Microsoft.IdentityModel.Tokens;                // Added
+using Microsoft.OpenApi.Models;                      // Added
+using System.Text;                                   // Added
+using Microsoft.AspNetCore.Authorization;            // Added
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -23,12 +28,9 @@ builder.Services.AddCors(options =>
         {
             policy.WithOrigins("http://localhost:5173")
                   .AllowAnyHeader()
-                  .AllowAnyMethod()
-                  //.AllowCredentials()
-                  ;
+                  .AllowAnyMethod();
         });
 });
-
 
 var connectionString = builder.Configuration.GetConnectionString("Default")
     ?? throw new InvalidOperationException("Logging database connection string is missing.");
@@ -46,7 +48,73 @@ builder.Services.AddAutoMapper(cfg =>
 });
 
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+
+// 1. Add Swagger JWT Support
+builder.Services.AddSwaggerGen(options =>
+{
+    options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+    {
+        Name = "Authorization",
+        Type = SecuritySchemeType.Http,
+        Scheme = "Bearer",
+        BearerFormat = "JWT",
+        In = ParameterLocation.Header,
+        Description = "Please enter a valid token. Format: eyJhbG..."
+    });
+
+    options.AddSecurityRequirement(new OpenApiSecurityRequirement
+    {
+        {
+            new OpenApiSecurityScheme
+            {
+                Reference = new OpenApiReference
+                {
+                    Type = ReferenceType.SecurityScheme,
+                    Id   = "Bearer"
+                }
+            },
+            new string[] {}
+        }
+    });
+});
+
+// 2. Add JWT Authentication
+builder.Services.AddAuthentication(options =>
+{
+    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+})
+.AddJwtBearer(options =>
+{
+    options.TokenValidationParameters = new TokenValidationParameters
+    {
+        ValidateIssuer = true,
+        ValidateAudience = true,
+        ValidateLifetime = true,
+        ValidateIssuerSigningKey = true,
+        ValidIssuer = builder.Configuration["Jwt:Issuer"],
+        ValidAudience = builder.Configuration["Jwt:Audience"],
+        IssuerSigningKey = new SymmetricSecurityKey(
+            Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]
+                ?? throw new InvalidOperationException("Jwt:Key is missing.")))
+    };
+});
+
+// 3. Add Authorization with Fallback Policy (same as main project)
+builder.Services.AddAuthorization(options =>
+{
+    options.FallbackPolicy = new AuthorizationPolicyBuilder()
+        .RequireAuthenticatedUser()
+        .RequireAssertion(context =>
+        {
+            if (context.Resource is HttpContext httpContext && httpContext.Request.Method == "OPTIONS")
+            {
+                return true;
+            }
+            return context.User.Identity?.IsAuthenticated ?? false;
+        })
+        .Build();
+});
 
 var app = builder.Build();
 
@@ -64,9 +132,11 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
+// 4. Order matters! CORS -> AuthN -> AuthZ
 app.UseCors("AllowReactApp");
-
+app.UseAuthentication(); // <--- This MUST be added before UseAuthorization
 app.UseAuthorization();
+
 app.MapControllers();
 
 app.Run();

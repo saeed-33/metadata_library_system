@@ -67,7 +67,7 @@ public class VocabulariesController : ControllerBase
         var deleted = await _mediator.Send(new DeleteVocabularyCommand(id));
         return deleted ? NoContent() : NotFound();
     }
-    [HttpPut("Undelet/{id:int}")]
+    [HttpPut("Undelete/{id:int}")]
     [Authorize(Roles = SystemRoles.Admin)]
     public async Task<IActionResult> Undelet(int id, UndeleteVocabularyCommand command)
     {

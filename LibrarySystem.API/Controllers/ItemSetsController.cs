@@ -89,7 +89,7 @@ public class ItemSetsController : ControllerBase
         var removed = await _mediator.Send(new RemoveItemFromItemSetCommand(itemSetId, itemId));
         return removed ? NoContent() : NotFound();
     }
-    [HttpPut("Undelet/{id:int}")]
+    [HttpPut("Undelete/{id:int}")]
     [Authorize(Roles = SystemRoles.Admin)]
     public async Task<IActionResult> Undelet(int id, UndeleteItemSetCommand command)
     {

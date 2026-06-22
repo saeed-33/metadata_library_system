@@ -126,7 +126,7 @@ public class MediaController : ControllerBase
         return Ok(mediaList);
     }
 
-    [HttpPut("Undelet/{id:int}")]
+    [HttpPut("Undelete/{id:int}")]
     [Authorize(Roles = SystemRoles.Admin)]
     public async Task<IActionResult> Undelet(int id, UndeleteMediaCommand command)
     {

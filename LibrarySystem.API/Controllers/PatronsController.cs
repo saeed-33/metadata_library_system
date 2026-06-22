@@ -22,7 +22,7 @@ public class PatronsController : ControllerBase
         return Ok(result);
     }
 
-    [HttpGet("AllWithDeleted")]
+    [HttpGet("WithDeleted")]
     [Authorize(Roles = SystemRoles.Admin)]
     public async Task<IActionResult> GetAllWithDeleted()
     {

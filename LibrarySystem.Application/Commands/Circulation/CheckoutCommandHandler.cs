@@ -3,6 +3,7 @@ using LibrarySystem.Application.Interfaces;
 using LibrarySystem.Domain.Entities;
 using MediatR;
 using System;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -21,38 +22,21 @@ namespace LibrarySystem.Application.Commands.Circulation
 
         public async Task<bool> Handle(CheckoutCommand request, CancellationToken cancellationToken)
         {
-            // 1. البحث عن النسخة بواسطة الباركود
-            // ملاحظة: قد تحتاج لإضافة ميثود GetByBarcode في المستودع أو استخدام Find
-            var allCopies = await _unitOfWork.ItemCopies.GetAllAsync();
-            var copy = allCopies.FirstOrDefault(c => c.Barcode == request.Barcode);
+            // 1. Fetch data safely 
+            // (FluentValidation already guaranteed that the Copy, Item, and Template exist and are valid)
+            var copies = await _unitOfWork.ItemCopies.FindAsync(c => c.Barcode == request.Barcode);
+            var copy = copies.First();
 
-            if (copy == null) throw new InvalidOperationException("النسخة غير موجودة.");
-
-            // 2. التحقق من حالة النسخة (يجب أن تكون 0: Available)
-            if (copy.Status != 0) throw new InvalidOperationException("هذه النسخة غير متاحة حالياً (معارة أو تحت الصيانة).");
-
-            // 3. التحقق من سياسة الإعارة للقالب
             var item = await _unitOfWork.Items.GetByIdAsync(copy.ItemId);
+            var template = await _unitOfWork.ResourceTemplates.GetByIdAsync(item!.TemplateId!.Value);
 
-            // التحقق من أن الكتاب موجود أولاً
-            if (item == null) throw new InvalidOperationException("الكتاب غير موجود.");
-
-            // التحقق من أن القالب مرتبط بالكتاب قبل استخدامه
-            if (!item.TemplateId.HasValue) throw new InvalidOperationException("هذا الكتاب غير مرتبط بقالب مصادر.");
-
-            // الآن نرسل القيمة بعد التأكد أنها ليست Null باستخدام .Value
-            var template = await _unitOfWork.ResourceTemplates.GetByIdAsync(item.TemplateId.Value);
-
-            if (template == null || !template.IsBorrowable)
-                throw new InvalidOperationException("هذا الصنف مخصص للمراجع فقط ولا يُسمح بإعارته.");
-
-            // 4. الحساب الذكي لتاريخ الاستحقاق (Due Date)
+            // 2. Smart Due Date Calculation
             DateTime dueDate;
             if (request.CustomDueDate.HasValue)
             {
                 dueDate = request.CustomDueDate.Value;
             }
-            else if (template.DefaultBorrowDays.HasValue)
+            else if (template!.DefaultBorrowDays.HasValue)
             {
                 dueDate = DateTime.UtcNow.AddDays(template.DefaultBorrowDays.Value);
             }
@@ -60,22 +44,24 @@ namespace LibrarySystem.Application.Commands.Circulation
             {
                 var settings = await _unitOfWork.SystemSettings.GetAllAsync();
                 var globalDays = settings.FirstOrDefault(s => s.Key == "GlobalBorrowDays")?.Value;
-                int days = int.TryParse(globalDays, out var d) ? d : 14; // الافتراضي 14 يوم
+                int days = int.TryParse(globalDays, out var d) ? d : 14; // Default 14 days
                 dueDate = DateTime.UtcNow.AddDays(days);
             }
 
-            // 5. إنشاء سجل الإعارة
+            // 3. Create Borrow Record
             var borrowRecord = _mapper.Map<BorrowRecord>(request);
             borrowRecord.CopyId = copy.Id;
             borrowRecord.BorrowDate = DateTime.UtcNow;
             borrowRecord.DueDate = dueDate;
             borrowRecord.Status = "Active";
 
-            // 6. تحديث حالة النسخة إلى "معارة" (1)
+            // 4. Update Copy Status to "Borrowed" (1)
             copy.Status = 1;
 
             await _unitOfWork.BorrowRecords.AddAsync(borrowRecord);
-             _unitOfWork.ItemCopies.Update(copy);
+            _unitOfWork.ItemCopies.Update(copy);
+
+            // 5. Save changes
             await _unitOfWork.SaveChangesAsync();
 
             return true;

@@ -73,7 +73,7 @@ public class UsersController : ControllerBase
         return deleted ? NoContent() : NotFound();
     }
 
-    [HttpPut("Undelet/{id:int}")]
+    [HttpPut("Undelete/{id:int}")]
     public async Task<IActionResult> Undelet(int id, UndeleteSystemUserCommand command)
     {
         if (id != command.Id)

@@ -89,7 +89,7 @@ public class ResourceTemplatesController : ControllerBase
         return NoContent();
     }
 
-    [HttpPut("Undelet/{id:int}")]
+    [HttpPut("Undelete/{id:int}")]
     [Authorize(Roles = SystemRoles.Admin)]
     public async Task<IActionResult> Undelet(int id, UndeleteResourceTemplateCommand command)
     {

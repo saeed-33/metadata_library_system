@@ -77,7 +77,7 @@ public class PropertiesController : ControllerBase
         return deleted ? NoContent() : NotFound();
     }
 
-    [HttpPut("Undelet/{id:int}")]
+    [HttpPut("Undelete/{id:int}")]
     [Authorize(Roles = SystemRoles.Admin)]
     public async Task<IActionResult> Undelet(int id, UndeletePropertyCommand command)
     {

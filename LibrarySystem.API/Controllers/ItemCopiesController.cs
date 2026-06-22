@@ -26,7 +26,7 @@ public class ItemCopiesController : ControllerBase
         return Ok(copies);
     }
 
-    [HttpGet("AllWithDeleted")]
+    [HttpGet("WithDeleted")]
     [Authorize(Roles = SystemRoles.Admin)]
     public async Task<IActionResult> GetAllWithDeleted()
     {

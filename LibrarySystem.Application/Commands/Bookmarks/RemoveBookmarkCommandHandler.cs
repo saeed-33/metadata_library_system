@@ -1,9 +1,9 @@
 ﻿using LibrarySystem.Application.Interfaces;
 using MediatR;
+using LibrarySystem.Application.DTOs.Bookmarks;
 
 namespace LibrarySystem.Application.Commands.Bookmarks;
 
-public record RemoveBookmarkCommand(string ExternalUserId, int ItemId) : IRequest<bool>;
 
 public class RemoveBookmarkCommandHandler : IRequestHandler<RemoveBookmarkCommand, bool>
 {

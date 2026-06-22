@@ -1,5 +1,5 @@
 ﻿using AutoMapper;
-using LibrarySystem.Application.DTOs.Users;
+using LibrarySystem.Application.DTOs.Bookmarks;
 using LibrarySystem.Application.Interfaces;
 using MediatR;
 

@@ -79,7 +79,7 @@ public class PropertiesController : ControllerBase
 
     [HttpPut("Undelete/{id:int}")]
     [Authorize(Roles = SystemRoles.Admin)]
-    public async Task<IActionResult> Undelet(int id, UndeletePropertyCommand command)
+    public async Task<IActionResult> Undelete(int id, UndeletePropertyCommand command)
     {
         if (id != command.Id)
             return BadRequest("URL id does not match command id.");

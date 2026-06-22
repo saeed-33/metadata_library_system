@@ -2,10 +2,10 @@ using LibrarySystem.Application.Interfaces;
 using MediatR;
 using System.Threading;
 using System.Threading.Tasks;
+using LibrarySystem.Application.DTOs.ItemCopies;
 
 namespace LibrarySystem.Application.Commands.ItemCopies;
 
-public record DeleteItemCopyCommand(int Id) : IRequest<bool>;
 
 public class DeleteItemCopyCommandHandler : IRequestHandler<DeleteItemCopyCommand, bool>
 {

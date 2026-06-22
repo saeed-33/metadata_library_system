@@ -91,7 +91,7 @@ public class ItemSetsController : ControllerBase
     }
     [HttpPut("Undelete/{id:int}")]
     [Authorize(Roles = SystemRoles.Admin)]
-    public async Task<IActionResult> Undelet(int id, UndeleteItemSetCommand command)
+    public async Task<IActionResult> Undelete(int id, UndeleteItemSetCommand command)
     {
         if (id != command.Id)
             return BadRequest("URL id does not match command id.");

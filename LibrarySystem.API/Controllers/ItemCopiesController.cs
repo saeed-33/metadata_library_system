@@ -7,9 +7,9 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace LibrarySystem.API.Controllers;
 
-[Authorize]
 [ApiController]
 [Route("api/item-copies")]
+[Authorize(Roles = $"{SystemRoles.Admin},{SystemRoles.Librarian}")]
 public class ItemCopiesController : ControllerBase
 {
     private readonly IMediator _mediator;
@@ -27,7 +27,6 @@ public class ItemCopiesController : ControllerBase
     }
 
     [HttpGet("WithDeleted")]
-    [Authorize(Roles = SystemRoles.Admin)]
     public async Task<IActionResult> GetAllWithDeleted()
     {
         var copies = await _mediator.Send(new GetAllItemCopiesWithDeletedQuery());
@@ -66,7 +65,6 @@ public class ItemCopiesController : ControllerBase
     }
 
     [HttpPut("Undelete/{id:int}")]
-    [Authorize(Roles = SystemRoles.Admin)]
     public async Task<IActionResult> Undelete(int id, UndeleteItemCopyCommand command)
     {
         if (id != command.Id)

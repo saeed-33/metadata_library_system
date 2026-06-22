@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace LibrarySystem.API.Controllers;
 
-[Authorize]
+[Authorize(Roles = $"{SystemRoles.Admin},{SystemRoles.Librarian}")]
 [ApiController]
 [Route("api/[controller]")]
 public class PatronsController : ControllerBase

@@ -7,10 +7,8 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace LibrarySystem.API.Controllers;
 
-[Authorize]
 [ApiController]
 [Route("api/items")]
-[Authorize]
 public class ItemsController : ControllerBase
 {
     private readonly IMediator _mediator;
@@ -50,6 +48,7 @@ public class ItemsController : ControllerBase
     }
 
     [HttpPost]
+    [Authorize(Roles = $"{SystemRoles.Admin},{SystemRoles.Librarian}")]
     public async Task<IActionResult> Create(CreateItemCommand command)
     {
         var id = await _mediator.Send(command);
@@ -57,6 +56,7 @@ public class ItemsController : ControllerBase
     }
 
     [HttpPut("{id:int}")]
+    [Authorize(Roles = $"{SystemRoles.Admin},{SystemRoles.Librarian}")]
     public async Task<IActionResult> Update(int id, UpdateItemCommand command)
     {
         if (id != command.Id)
@@ -67,7 +67,8 @@ public class ItemsController : ControllerBase
     }
 
     [HttpPut("Undelete/{id:int}")]
-    [Authorize(Roles = SystemRoles.Admin)]
+    [Authorize(Roles = $"{SystemRoles.Admin},{SystemRoles.Librarian}")]
+
     public async Task<IActionResult> Undelete(int id, UndeletItemCommand command)
     {
         if (id != command.Id)
@@ -78,8 +79,7 @@ public class ItemsController : ControllerBase
     }
 
     [HttpDelete("{id:int}")]
-    [Authorize(Roles = SystemRoles.Admin)]
-
+    [Authorize(Roles = $"{SystemRoles.Admin},{SystemRoles.Librarian}")]
     public async Task<IActionResult> Delete(int id)
     {
         var deleted = await _mediator.Send(new DeleteItemCommand(id));

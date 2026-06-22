@@ -9,9 +9,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace LibrarySystem.API.Controllers;
 
-[Authorize]
 [ApiController]
-[Authorize]
 [Route("api/item-sets")]
 public class ItemSetsController : ControllerBase
 {
@@ -45,6 +43,7 @@ public class ItemSetsController : ControllerBase
     }
 
     [HttpPost]
+    [Authorize(Roles = SystemRoles.Admin)]
     public async Task<IActionResult> Create(CreateItemSetRequest request)
     {
         var id = await _mediator.Send(new CreateItemSetCommand(
@@ -57,6 +56,7 @@ public class ItemSetsController : ControllerBase
     }
 
     [HttpPut("{id:int}")]
+    [Authorize(Roles = SystemRoles.Admin)]
     public async Task<IActionResult> Update(int id, UpdateItemSetRequest request)
     {
         var updated = await _mediator.Send(new UpdateItemSetCommand(
@@ -78,6 +78,8 @@ public class ItemSetsController : ControllerBase
     }
 
     [HttpPost("{itemSetId:int}/items/{itemId:int}")]
+    [Authorize(Roles = SystemRoles.Admin)]
+
     public async Task<IActionResult> AddItem(int itemSetId, int itemId)
     {
         var added = await _mediator.Send(new AddItemToItemSetCommand(itemSetId, itemId));
@@ -85,11 +87,13 @@ public class ItemSetsController : ControllerBase
     }
 
     [HttpDelete("{itemSetId:int}/items/{itemId:int}")]
+    [Authorize(Roles = SystemRoles.Admin)]
     public async Task<IActionResult> RemoveItem(int itemSetId, int itemId)
     {
         var removed = await _mediator.Send(new RemoveItemFromItemSetCommand(itemSetId, itemId));
         return removed ? NoContent() : NotFound();
     }
+
     [HttpPut("Undelete/{id:int}")]
     [Authorize(Roles = SystemRoles.Admin)]
     public async Task<IActionResult> Undelete(int id, UndeleteItemSetCommand command)

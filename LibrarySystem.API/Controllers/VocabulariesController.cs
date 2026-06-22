@@ -9,10 +9,8 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace LibrarySystem.API.Controllers;
 
-[Authorize]
 [ApiController]
 [Route("api/vocabularies")]
-[Authorize]
 public class VocabulariesController : ControllerBase
 {
     private readonly IMediator _mediator;
@@ -45,6 +43,7 @@ public class VocabulariesController : ControllerBase
     }
 
     [HttpPost]
+    [Authorize(Roles = SystemRoles.Admin)]
     public async Task<IActionResult> Create(CreateVocabularyCommand command)
     {
         var id = await _mediator.Send(command);
@@ -52,6 +51,8 @@ public class VocabulariesController : ControllerBase
     }
 
     [HttpPut("{id:int}")]
+    [Authorize(Roles = SystemRoles.Admin)]
+
     public async Task<IActionResult> Update(int id, UpdateVocabularyCommand command)
     {
         // Make sure the id in the URL matches the command

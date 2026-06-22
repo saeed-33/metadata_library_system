@@ -9,7 +9,8 @@ public record CreatePropertyCommand(
     int VocabularyId,
     string LocalName,
     string Label,
-    string TermUri
+    string TermUri,
+     bool IsSearchable = false
 ) : IRequest<int>;
 
 public class CreatePropertyCommandHandler : IRequestHandler<CreatePropertyCommand, int>

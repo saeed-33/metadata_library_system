@@ -6,7 +6,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace LibrarySystem.Application.Validators.Circulation;
+namespace LibrarySystem.Application.DTOs.Circulation;
 
 public class CheckoutCommandValidator : AbstractValidator<CheckoutCommand>
 {

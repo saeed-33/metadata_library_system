@@ -4,6 +4,7 @@ using LibrarySystem.Application.Queries.Patrons;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using LibrarySystem.Application.DTOs.Circulation;
 
 namespace LibrarySystem.API.Controllers;
 

@@ -10,11 +10,12 @@ namespace LibrarySystem.Domain.Entities
     public int PatronId { get; set; }
     public Patron Patron { get; set; } = null!;
 
-    public DateTime BorrowDate { get; set; }
-    public DateTime DueDate { get; set; } 
-    public DateTime? ReturnDate { get; set; } 
+    
+    public DateTime BorrowDate { get; set; } //When they actually take it 
+    public DateTime DueDate { get; set; } //deadline
+    public DateTime? ReturnDate { get; set; } //When they actually bring it back
 
-    // حالات السجل: Active, Returned, Overdue
-    public string Status { get; set; } = "Active"; 
+        // حالات السجل: Active, Returned, Overdue
+        public string Status { get; set; } = "Active"; 
 }
 }

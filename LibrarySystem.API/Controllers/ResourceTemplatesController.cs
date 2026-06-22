@@ -8,10 +8,8 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace LibrarySystem.API.Controllers;
 
-[Authorize]
 [ApiController]
 [Route("api/resource-templates")]
-[Authorize]
 public class ResourceTemplatesController : ControllerBase
 {
     private readonly IMediator _mediator;
@@ -45,6 +43,8 @@ public class ResourceTemplatesController : ControllerBase
     }
 
     [HttpPost]
+    [Authorize(Roles = SystemRoles.Admin)]
+
     public async Task<IActionResult> Create(CreateResourceTemplateCommand command)
     {
         var id = await _mediator.Send(command);
@@ -52,6 +52,8 @@ public class ResourceTemplatesController : ControllerBase
     }
 
     [HttpPut("{id:int}")]
+    [Authorize(Roles = SystemRoles.Admin)]
+
     public async Task<IActionResult> Update(int id, UpdateResourceTemplateCommand command)
     {
         if (id != command.Id)
@@ -64,6 +66,8 @@ public class ResourceTemplatesController : ControllerBase
     // This endpoint manages which properties belong to the template
     // PUT api/resource-templates/5/properties
     [HttpPut("{id:int}/properties")]
+    [Authorize(Roles = SystemRoles.Admin)]
+
     public async Task<IActionResult> UpdateProperties(int id, UpdateTemplatePropertiesCommand command)
     {
         if (id != command.TemplateId)

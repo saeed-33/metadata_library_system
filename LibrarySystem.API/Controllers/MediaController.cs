@@ -10,10 +10,8 @@ using Microsoft.AspNetCore.Mvc;
 using System.Text.Json;
 namespace LibrarySystem.API.Controllers;
 
-[Authorize]
 [ApiController]
 [Route("api/media")]
-[Authorize]
 public class MediaController : ControllerBase
 {
     private readonly IMediator _mediator;
@@ -39,6 +37,7 @@ public class MediaController : ControllerBase
     }
 
     [HttpPost]
+    [Authorize(Roles = SystemRoles.Admin)]
     public async Task<IActionResult> Create(CreateMediaCommand command)
     {
         var id = await _mediator.Send(command);
@@ -46,6 +45,8 @@ public class MediaController : ControllerBase
     }
 
     [HttpPut("{id:int}")]
+    [Authorize(Roles = SystemRoles.Admin)]
+
     public async Task<IActionResult> Update(int id, UpdateMediaCommand command)
     {
         if (id != command.Id)
@@ -65,6 +66,8 @@ public class MediaController : ControllerBase
     }
 
     [HttpPost("upload-with-metadata")]
+    [Authorize(Roles = SystemRoles.Admin)]
+
     public async Task<IActionResult> UploadWithMetadata([FromForm] UploadMediaRequestDto request)
     {
         if (request.File == null || request.File.Length == 0)
@@ -113,6 +116,7 @@ public class MediaController : ControllerBase
             return StatusCode(500, "An error occurred while saving data; file upload was rolled back.");
         }
     }
+    
     [HttpGet]
     public async Task<IActionResult> GetAll()
     {

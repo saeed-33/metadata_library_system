@@ -1,15 +1,16 @@
 using LibrarySystem.Application.Commands.Circulation;
+using LibrarySystem.Application.DTOs.Circulation;
 using LibrarySystem.Application.Queries.Circulation;
 using LibrarySystem.Application.Queries.Patrons;
+using LibrarySystem.Domain.common;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using LibrarySystem.Application.DTOs.Circulation;
 
 namespace LibrarySystem.API.Controllers;
 
 
-[Authorize] // إجباري أن يكون المستخدم مسجل الدخول (يمتلك Token)
+[Authorize(Roles = $"{SystemRoles.Admin},{SystemRoles.Librarian}")]
 [ApiController]
 [Route("api/[controller]")]
 public class CirculationController : ControllerBase

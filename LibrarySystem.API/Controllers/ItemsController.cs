@@ -10,6 +10,7 @@ namespace LibrarySystem.API.Controllers;
 [Authorize]
 [ApiController]
 [Route("api/items")]
+[Authorize]
 public class ItemsController : ControllerBase
 {
     private readonly IMediator _mediator;
@@ -77,6 +78,8 @@ public class ItemsController : ControllerBase
     }
 
     [HttpDelete("{id:int}")]
+    [Authorize(Roles = SystemRoles.Admin)]
+
     public async Task<IActionResult> Delete(int id)
     {
         var deleted = await _mediator.Send(new DeleteItemCommand(id));

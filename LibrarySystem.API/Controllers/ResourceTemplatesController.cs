@@ -11,6 +11,7 @@ namespace LibrarySystem.API.Controllers;
 [Authorize]
 [ApiController]
 [Route("api/resource-templates")]
+[Authorize]
 public class ResourceTemplatesController : ControllerBase
 {
     private readonly IMediator _mediator;
@@ -73,6 +74,8 @@ public class ResourceTemplatesController : ControllerBase
     }
 
     [HttpDelete("{id:int}")]
+    [Authorize(Roles = SystemRoles.Admin)]
+
     public async Task<IActionResult> Delete(int id)
     {
         var result = await _mediator.Send(new DeleteResourceTemplateCommand(id));

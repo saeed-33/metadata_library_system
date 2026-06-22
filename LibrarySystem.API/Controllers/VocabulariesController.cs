@@ -12,6 +12,7 @@ namespace LibrarySystem.API.Controllers;
 [Authorize]
 [ApiController]
 [Route("api/vocabularies")]
+[Authorize]
 public class VocabulariesController : ControllerBase
 {
     private readonly IMediator _mediator;
@@ -62,6 +63,7 @@ public class VocabulariesController : ControllerBase
     }
 
     [HttpDelete("{id:int}")]
+    [Authorize(Roles = SystemRoles.Admin)]
     public async Task<IActionResult> Delete(int id)
     {
         var deleted = await _mediator.Send(new DeleteVocabularyCommand(id));

@@ -18,6 +18,7 @@ namespace LibrarySystem.API.Controllers
         }
 
         [HttpPost("upload")]
+        [Authorize]
         public async Task<IActionResult> Upload(IFormFile file, [FromQuery] int? itemId)
         {
             if (file == null || file.Length == 0)

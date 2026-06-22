@@ -11,6 +11,7 @@ namespace LibrarySystem.API.Controllers;
 
 [Authorize]
 [ApiController]
+[Authorize]
 [Route("api/item-sets")]
 public class ItemSetsController : ControllerBase
 {
@@ -30,7 +31,6 @@ public class ItemSetsController : ControllerBase
 
     [HttpGet("WithDeleted")]
     [Authorize(Roles = SystemRoles.Admin)]
-
     public async Task<IActionResult> GetAllWithDeleted()
     {
         var itemSets = await _mediator.Send(new GetAllItemSetsWithDeletedQuery());
@@ -70,6 +70,7 @@ public class ItemSetsController : ControllerBase
     }
 
     [HttpDelete("{id:int}")]
+    [Authorize(Roles = SystemRoles.Admin)]
     public async Task<IActionResult> Delete(int id)
     {
         var deleted = await _mediator.Send(new DeleteItemSetCommand(id));

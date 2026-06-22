@@ -10,6 +10,7 @@ namespace LibrarySystem.API.Controllers;
 [Authorize]
 [ApiController]
 [Route("api/properties")]
+[Authorize]
 public class PropertiesController : ControllerBase
 {
     private readonly IMediator _mediator;
@@ -30,7 +31,6 @@ public class PropertiesController : ControllerBase
 
     [HttpGet("WithDeleted")]
     [Authorize(Roles = SystemRoles.Admin)]
-
     public async Task<IActionResult> GetAllWithDeleted()
     {
         var properties = await _mediator.Send(new GetAllPropertiesWithDeletedQuery());
@@ -71,6 +71,7 @@ public class PropertiesController : ControllerBase
     }
 
     [HttpDelete("{id:int}")]
+    [Authorize(Roles = SystemRoles.Admin)]
     public async Task<IActionResult> Delete(int id)
     {
         var deleted = await _mediator.Send(new DeletePropertyCommand(id));

@@ -8,6 +8,7 @@ public class PropertyResponse
     public string LocalName { get; set; } = string.Empty;
     public string Label { get; set; } = string.Empty;
     public string TermUri { get; set; } = string.Empty;
+    public bool IsSearchable { get; set; }
 
-    
+
 }

@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace LibrarySystem.API.Controllers;
 
+[Authorize]
 [ApiController]
 [Authorize]
 [Route("api/item-sets")]
@@ -89,9 +90,9 @@ public class ItemSetsController : ControllerBase
         var removed = await _mediator.Send(new RemoveItemFromItemSetCommand(itemSetId, itemId));
         return removed ? NoContent() : NotFound();
     }
-    [HttpPut("Undelet/{id:int}")]
+    [HttpPut("Undelete/{id:int}")]
     [Authorize(Roles = SystemRoles.Admin)]
-    public async Task<IActionResult> Undelete(int id, UndeleteItemSetCommand command)
+    public async Task<IActionResult> Undelet(int id, UndeleteItemSetCommand command)
     {
         if (id != command.Id)
             return BadRequest("URL id does not match command id.");

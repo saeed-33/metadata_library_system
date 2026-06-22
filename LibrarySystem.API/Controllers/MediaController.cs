@@ -1,6 +1,6 @@
-using LibrarySystem.Application.Commands.Items;
-using LibrarySystem.Application.Commands.ItemSets;
 using LibrarySystem.Application.Commands.Media;
+using LibrarySystem.Application.DTOs.Media;
+using LibrarySystem.Application.DTOs.Values;
 using LibrarySystem.Application.Queries.Media;
 using LibrarySystem.Domain.common;
 using MediatR;
@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Mvc;
 using System.Text.Json;
 namespace LibrarySystem.API.Controllers;
 
+[Authorize]
 [ApiController]
 [Route("api/media")]
 [Authorize]
@@ -90,7 +91,8 @@ public class MediaController : ControllerBase
             var jsonOptions = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
             var mediaValues = string.IsNullOrEmpty(request.ValuesJson)
                 ? new List<CreateValueRequest>()
-                : JsonSerializer.Deserialize<List<CreateValueRequest>>(request.ValuesJson, jsonOptions);
+                : JsonSerializer.Deserialize<List<CreateValueRequest>>(request.ValuesJson, jsonOptions)
+                    ?? new List<CreateValueRequest>();
 
             var command = new CreateMediaCommand(
                 request.ItemId,
@@ -127,10 +129,9 @@ public class MediaController : ControllerBase
         return Ok(mediaList);
     }
 
-    [HttpPut("Undelet/{id:int}")]
+    [HttpPut("Undelete/{id:int}")]
     [Authorize(Roles = SystemRoles.Admin)]
-
-    public async Task<IActionResult> Undelete(int id, UndeleteMediaCommand command)
+    public async Task<IActionResult> Undelet(int id, UndeleteMediaCommand command)
     {
         if (id != command.Id)
             return BadRequest("URL id does not match command id.");
@@ -139,11 +140,4 @@ public class MediaController : ControllerBase
         return updated ? NoContent() : NotFound();
     }
 
-}
-
-    public class UploadMediaRequestDto
-{
-    public IFormFile File { get; set; }
-    public int ItemId { get; set; }
-    public string ValuesJson { get; set; }
 }

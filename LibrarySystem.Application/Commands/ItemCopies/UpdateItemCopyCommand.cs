@@ -24,7 +24,7 @@ public class UpdateItemCopyHandler : IRequestHandler<UpdateItemCopyCommand, bool
     public async Task<bool> Handle(UpdateItemCopyCommand request, CancellationToken ct)
     {
         var copy = await _unitOfWork.ItemCopies.GetByIdAsync(request.Id);
-        if (copy == null) throw new Exception("النسخة غير موجودة.");
+        if (copy == null) return false;
 
         _mapper.Map(request, copy);
 

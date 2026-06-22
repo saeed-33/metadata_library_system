@@ -5,6 +5,7 @@ using SixLabors.ImageSharp.Processing;
 
 namespace LibrarySystem.API.Controllers
 {
+    [Authorize]
     [ApiController]
     [Route("api/[controller]")]
     public class FilesController : ControllerBase

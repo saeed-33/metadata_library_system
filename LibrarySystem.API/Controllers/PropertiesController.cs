@@ -1,4 +1,3 @@
-using LibrarySystem.Application.Commands.Media;
 using LibrarySystem.Application.Commands.Properties;
 using LibrarySystem.Application.Queries.Properties;
 using LibrarySystem.Domain.common;
@@ -8,6 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace LibrarySystem.API.Controllers;
 
+[Authorize]
 [ApiController]
 [Route("api/properties")]
 [Authorize]
@@ -78,10 +78,9 @@ public class PropertiesController : ControllerBase
         return deleted ? NoContent() : NotFound();
     }
 
-
-    [HttpPut("Undelet/{id:int}")]
+    [HttpPut("Undelete/{id:int}")]
     [Authorize(Roles = SystemRoles.Admin)]
-    public async Task<IActionResult> Undelete(int id, UndeletePropertyCommand command)
+    public async Task<IActionResult> Undelet(int id, UndeletePropertyCommand command)
     {
         if (id != command.Id)
             return BadRequest("URL id does not match command id.");

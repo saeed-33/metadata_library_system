@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace LibrarySystem.API.Controllers;
 
+[Authorize]
 [ApiController]
 [Route("api/resource-templates")]
 [Authorize]
@@ -91,10 +92,9 @@ public class ResourceTemplatesController : ControllerBase
         return NoContent();
     }
 
-    [HttpPut("Undelet/{id:int}")]
+    [HttpPut("Undelete/{id:int}")]
     [Authorize(Roles = SystemRoles.Admin)]
-
-    public async Task<IActionResult> Undelete(int id, UndeleteResourceTemplateCommand command)
+    public async Task<IActionResult> Undelet(int id, UndeleteResourceTemplateCommand command)
     {
         if (id != command.Id)
             return BadRequest("URL id does not match command id.");

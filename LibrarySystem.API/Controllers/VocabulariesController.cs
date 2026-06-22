@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace LibrarySystem.API.Controllers;
 
+[Authorize]
 [ApiController]
 [Route("api/vocabularies")]
 [Authorize]
@@ -68,10 +69,9 @@ public class VocabulariesController : ControllerBase
         var deleted = await _mediator.Send(new DeleteVocabularyCommand(id));
         return deleted ? NoContent() : NotFound();
     }
-    
-    [HttpPut("Undelet/{id:int}")]
+    [HttpPut("Undelete/{id:int}")]
     [Authorize(Roles = SystemRoles.Admin)]
-    public async Task<IActionResult> Undelete(int id, UndeleteVocabularyCommand command)
+    public async Task<IActionResult> Undelet(int id, UndeleteVocabularyCommand command)
     {
         if (id != command.Id)
             return BadRequest("URL id does not match command id.");

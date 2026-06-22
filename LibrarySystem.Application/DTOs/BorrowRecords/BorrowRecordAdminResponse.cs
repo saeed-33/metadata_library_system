@@ -12,4 +12,9 @@ public class BorrowRecordAdminResponse : BorrowRecordResponse
 {
     public DateTime CreatedAt { get; set; }
     public string? CreatedBy { get; set; }
+
+    // حقول عرض للواجهة
+    public string CopyBarcode { get; set; } = string.Empty;
+    public string ItemTitle { get; set; } = string.Empty;
+    public string PatronName { get; set; } = string.Empty;
 }

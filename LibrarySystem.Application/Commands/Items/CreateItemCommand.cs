@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using LibrarySystem.Application.DTOs.Values;
 using LibrarySystem.Application.Interfaces;
 using LibrarySystem.Domain.Entities;
 using MediatR;
@@ -10,15 +11,6 @@ public record CreateItemCommand(
     int? OwnerId,
     List<CreateValueRequest> Values
 ) : IRequest<int>;
-
-public record CreateValueRequest(
-    int PropertyId,
-    string? ValueText,
-    string? ValueUri,
-    int? ValueResourceId,
-    string Type = "literal",
-    string Language = "ar"
-);
 
 public class CreateItemCommandHandler : IRequestHandler<CreateItemCommand, int>
 {

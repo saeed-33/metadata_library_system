@@ -11,7 +11,11 @@ public class BorrowRecordMappingProfile : Profile
     public BorrowRecordMappingProfile()
     {
         CreateMap<BorrowRecord, BorrowRecordResponse>();
-        CreateMap<BorrowRecord, BorrowRecordAdminResponse>();
+
+        CreateMap<BorrowRecord, BorrowRecordAdminResponse>()
+            .ForMember(dest => dest.CopyBarcode, opt => opt.MapFrom(src => src.Copy.Barcode))
+            .ForMember(dest => dest.ItemTitle, opt => opt.MapFrom(src => src.Copy.ItemId.ToString()))
+            .ForMember(dest => dest.PatronName, opt => opt.MapFrom(src => src.Patron.FullName));
 
         // من Command الإعارة إلى Entity
         CreateMap<CheckoutCommand, BorrowRecord>();

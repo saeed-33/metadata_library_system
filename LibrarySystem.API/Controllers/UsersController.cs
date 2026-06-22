@@ -73,10 +73,8 @@ public class UsersController : ControllerBase
         return deleted ? NoContent() : NotFound();
     }
 
-    [HttpPut("Undelet/{id:int}")]
-    [Authorize(Roles = SystemRoles.Admin)]
-
-    public async Task<IActionResult> Undelete(int id, UndeleteSystemUserCommand command)
+    [HttpPut("Undelete/{id:int}")]
+    public async Task<IActionResult> Undelet(int id, UndeleteSystemUserCommand command)
     {
         if (id != command.Id)
             return BadRequest("URL id does not match command id.");

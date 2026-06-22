@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace LibrarySystem.API.Controllers;
 
+[Authorize]
 [ApiController]
 [Route("api/items")]
 [Authorize]
@@ -65,10 +66,9 @@ public class ItemsController : ControllerBase
         return updated ? NoContent() : NotFound();
     }
 
-    [HttpPut("Undelet/{id:int}")]
+    [HttpPut("Undelete/{id:int}")]
     [Authorize(Roles = SystemRoles.Admin)]
-
-    public async Task<IActionResult> Undelete(int id, UndeletItemCommand command)
+    public async Task<IActionResult> Undelet(int id, UndeletItemCommand command)
     {
         if (id != command.Id)
             return BadRequest("URL id does not match command id.");

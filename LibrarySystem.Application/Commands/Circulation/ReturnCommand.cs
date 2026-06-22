@@ -1,8 +1,7 @@
 using LibrarySystem.Application.Interfaces;
-using LibrarySystem.Domain.entities;
-using LibrarySystem.Domain.Entities;
 using MediatR;
 using System;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -10,34 +9,39 @@ namespace LibrarySystem.Application.Commands.Circulation
 {
     public record ReturnCommand(string Barcode) : IRequest<bool>;
 
-public class ReturnCommandHandler : IRequestHandler<ReturnCommand, bool>
-{
-    private readonly IUnitOfWork _unitOfWork;
-    public ReturnCommandHandler(IUnitOfWork unitOfWork) => _unitOfWork = unitOfWork;
-
-    public async Task<bool> Handle(ReturnCommand request, CancellationToken ct)
+    public class ReturnCommandHandler : IRequestHandler<ReturnCommand, bool>
     {
-        var allCopies = await _unitOfWork.ItemCopies.GetAllAsync();
-        var copy = allCopies.FirstOrDefault(c => c.Barcode == request.Barcode);
-        if (copy == null) throw new Exception("النسخة غير موجودة.");
+        private readonly IUnitOfWork _unitOfWork;
 
-        var allRecords = await _unitOfWork.BorrowRecords.GetAllAsync();
-        var activeRecord = allRecords.FirstOrDefault(r => r.CopyId == copy.Id && r.ReturnDate == null);
-        
-        if (activeRecord == null) throw new Exception("لا يوجد سجل إعارة نشط لهذه النسخة.");
+        public ReturnCommandHandler(IUnitOfWork unitOfWork)
+        {
+            _unitOfWork = unitOfWork;
+        }
 
-        // تحديث السجل
-        activeRecord.ReturnDate = DateTime.UtcNow;
-        activeRecord.Status = "Returned";
+        public async Task<bool> Handle(ReturnCommand request, CancellationToken ct)
+        {
+            // 1. Fetch the copy safely (Validation guarantees it exists)
+            var copies = await _unitOfWork.ItemCopies.FindAsync(c => c.Barcode == request.Barcode);
+            var copy = copies.First();
 
-        // إعادة النسخة لتكون متاحة
-        copy.Status = 0;
+            // 2. Fetch the active borrow record safely (Validation guarantees it exists)
+            var records = await _unitOfWork.BorrowRecords.FindAsync(r => r.CopyId == copy.Id && r.ReturnDate == null);
+            var activeRecord = records.First();
 
-         _unitOfWork.BorrowRecords.Update(activeRecord);
-         _unitOfWork.ItemCopies.Update(copy);
-        await _unitOfWork.SaveChangesAsync();
+            // 3. Update the record
+            activeRecord.ReturnDate = DateTime.UtcNow;
+            activeRecord.Status = "Returned";
 
-        return true;
+            // 4. Reset the copy status to Available (0)
+            copy.Status = 0;
+
+            // 5. Update and Save
+            _unitOfWork.BorrowRecords.Update(activeRecord);
+            _unitOfWork.ItemCopies.Update(copy);
+
+            await _unitOfWork.SaveChangesAsync();
+
+            return true;
+        }
     }
-}
 }

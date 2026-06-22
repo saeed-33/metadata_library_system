@@ -1,6 +1,5 @@
 using AutoMapper;
 using LibrarySystem.Application.DTOs.BorrowRecords;
-using LibrarySystem.Application.DTOs.Circulation;
 using LibrarySystem.Application.Interfaces;
 using MediatR;
 
@@ -21,14 +20,16 @@ public class GetBorrowHistoryHandler : IRequestHandler<GetBorrowHistoryQuery, Li
 
     public async Task<List<BorrowRecordAdminResponse>> Handle(GetBorrowHistoryQuery request, CancellationToken ct)
     {
-        var records = await _unitOfWork.BorrowRecords.GetAllAsync();
-        
+        // تحميل العلاقات المطلوبة لعرض الباركود واسم المستعير
+        var records = await _unitOfWork.BorrowRecords.FindAsync(
+            r => true,
+            r => r.Copy.Item,
+            r => r.Patron);
+
         // فلترة البيانات بناءً على طلب الـ UI
         if (request.ItemId.HasValue)
         {
-            var copies = await _unitOfWork.ItemCopies.GetAllAsync();
-            var itemCopyIds = copies.Where(c => c.ItemId == request.ItemId.Value).Select(c => c.Id);
-            records = records.Where(r => itemCopyIds.Contains(r.CopyId));
+            records = records.Where(r => r.Copy != null && r.Copy.ItemId == request.ItemId.Value);
         }
 
         if (request.PatronId.HasValue)

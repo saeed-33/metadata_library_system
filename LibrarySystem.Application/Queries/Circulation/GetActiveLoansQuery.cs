@@ -22,7 +22,7 @@ public class GetActiveLoansHandler : IRequestHandler<GetActiveLoansQuery, List<A
     {
         var records = await _unitOfWork.BorrowRecords.FindAsync(
             r => r.ReturnDate == null,
-            r => r.Copy,
+            r => r.Copy.Item,
             r => r.Patron);
 
         return _mapper.Map<List<ActiveLoanDto>>(records);

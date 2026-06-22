@@ -11,8 +11,8 @@ namespace LibrarySystem.Domain.Entities
         public virtual Item Item { get; set; } = null!;
         public string StoragePath { get; set; } = null!;
         public string FileName { get; set; } = null!;
-        public string? MimeType { get; set; }
+        public string? MimeType { get; set; } // jpeg, pdf,...
         public long FileSize { get; set; }
-        public string? AltText { get; set; }
+        public string? AltText { get; set; } // description for the media object
     }
 }

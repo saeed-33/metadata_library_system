@@ -10,4 +10,3 @@ public record CheckoutCommand(
         int PatronId, 
         DateTime? CustomDueDate = null
     ) : IRequest<bool>;
-}

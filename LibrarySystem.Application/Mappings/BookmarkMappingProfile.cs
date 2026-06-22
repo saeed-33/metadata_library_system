@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using LibrarySystem.Application.DTOs.Users;
 using LibrarySystem.Domain.entities;
+using LibrarySystem.Application.DTOs.Bookmarks;
 
 namespace LibrarySystem.Application.Mappings;
 

@@ -74,7 +74,7 @@ public class UsersController : ControllerBase
     }
 
     [HttpPut("Undelete/{id:int}")]
-    public async Task<IActionResult> Undelet(int id, UndeleteSystemUserCommand command)
+    public async Task<IActionResult> Undelete(int id, UndeleteSystemUserCommand command)
     {
         if (id != command.Id)
             return BadRequest("URL id does not match command id.");

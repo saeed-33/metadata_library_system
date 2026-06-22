@@ -2,10 +2,10 @@
 using LibrarySystem.Domain.entities;
 using LibrarySystem.Domain.Entities; // تأكد من مسار الكلاس
 using MediatR;
+using LibrarySystem.Application.DTOs.Bookmarks;
 
 namespace LibrarySystem.Application.Commands.Bookmarks;
 
-public record AddBookmarkCommand(string ExternalUserId, int ItemId) : IRequest<bool>;
 
 public class AddBookmarkCommandHandler : IRequestHandler<AddBookmarkCommand, bool>
 {

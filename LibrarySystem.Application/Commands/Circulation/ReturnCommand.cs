@@ -4,10 +4,11 @@ using System;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using LibrarySystem.Application.DTOs.Circulation;
+
 
 namespace LibrarySystem.Application.Commands.Circulation
 {
-    public record ReturnCommand(string Barcode) : IRequest<bool>;
 
     public class ReturnCommandHandler : IRequestHandler<ReturnCommand, bool>
     {

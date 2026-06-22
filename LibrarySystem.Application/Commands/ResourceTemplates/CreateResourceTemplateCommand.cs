@@ -5,7 +5,12 @@ using AutoMapper;
 
 namespace LibrarySystem.Application.Commands.ResourceTemplates;
 
-public record CreateResourceTemplateCommand(string Label, string? Description) : IRequest<int>;
+public record CreateResourceTemplateCommand(
+    string Label,
+    string? Description,
+    bool IsBorrowable = true,
+    int? DefaultBorrowDays = null
+) : IRequest<int>;
 
 public class CreateResourceTemplateCommandHandler : IRequestHandler<CreateResourceTemplateCommand, int>
 {

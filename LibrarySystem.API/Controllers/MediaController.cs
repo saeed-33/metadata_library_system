@@ -131,7 +131,7 @@ public class MediaController : ControllerBase
 
     [HttpPut("Undelete/{id:int}")]
     [Authorize(Roles = SystemRoles.Admin)]
-    public async Task<IActionResult> Undelet(int id, UndeleteMediaCommand command)
+    public async Task<IActionResult> Undelete(int id, UndeleteMediaCommand command)
     {
         if (id != command.Id)
             return BadRequest("URL id does not match command id.");

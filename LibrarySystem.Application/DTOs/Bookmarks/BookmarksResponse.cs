@@ -1,4 +1,4 @@
-﻿namespace LibrarySystem.Application.DTOs.Users;
+﻿namespace LibrarySystem.Application.DTOs.Bookmarks;
 
 public record BookmarksResponse(
     int Id

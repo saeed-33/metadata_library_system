@@ -5,6 +5,8 @@ public class ResourceTemplateResponse
     public int Id { get; set; }
     public string Label { get; set; } = string.Empty;
     public string? Description { get; set; }
+    public bool IsBorrowable { get; set; }
+    public int? DefaultBorrowDays { get; set; }
     public List<TemplatePropertyResponse> Properties { get; set; } = new();
 }
 

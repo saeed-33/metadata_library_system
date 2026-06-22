@@ -5,10 +5,10 @@ using MediatR;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using LibrarySystem.Application.DTOs.ItemCopies;
 
 namespace LibrarySystem.Application.Commands.ItemCopies;
 
-public record UpdateItemCopyCommand(int Id, string Barcode, int Status, string? Notes) : IRequest<bool>;
 
 public class UpdateItemCopyHandler : IRequestHandler<UpdateItemCopyCommand, bool>
 {

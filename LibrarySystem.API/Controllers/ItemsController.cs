@@ -9,6 +9,7 @@ namespace LibrarySystem.API.Controllers;
 
 [ApiController]
 [Route("api/items")]
+
 public class ItemsController : ControllerBase
 {
     private readonly IMediator _mediator;
@@ -19,6 +20,8 @@ public class ItemsController : ControllerBase
     }
 
     [HttpGet]
+    [AllowAnonymous]
+
     public async Task<IActionResult> GetAll()
     {
         var items = await _mediator.Send(new GetAllItemsQuery());
@@ -33,7 +36,10 @@ public class ItemsController : ControllerBase
         var items = await _mediator.Send(new GetAllItemsWithDeletedQuery());
         return Ok(items);
     }
+   
     [HttpGet("{id:int}")]
+    [AllowAnonymous]
+
     public async Task<IActionResult> GetById(int id)
     {
         var item = await _mediator.Send(new GetItemByIdQuery(id));
@@ -41,6 +47,8 @@ public class ItemsController : ControllerBase
     }
 
     [HttpGet("{id:int}/copies")]
+    [AllowAnonymous]
+
     public async Task<IActionResult> GetWithCopies(int id)
     {
         var item = await _mediator.Send(new GetItemWithCopiesQuery(id));

@@ -21,6 +21,8 @@ public class SystemSettingsController : ControllerBase
     }
 
     [HttpGet]
+    [AllowAnonymous]
+
     [Authorize(Roles = $"{SystemRoles.Admin},{SystemRoles.Librarian}")]
 
     public async Task<IActionResult> GetAll()

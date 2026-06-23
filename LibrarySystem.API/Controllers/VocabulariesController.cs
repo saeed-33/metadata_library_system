@@ -11,6 +11,7 @@ namespace LibrarySystem.API.Controllers;
 
 [ApiController]
 [Route("api/vocabularies")]
+
 public class VocabulariesController : ControllerBase
 {
     private readonly IMediator _mediator;
@@ -21,6 +22,8 @@ public class VocabulariesController : ControllerBase
     }
 
     [HttpGet]
+    [AllowAnonymous]
+
     public async Task<IActionResult> GetAll()
     {
         var vocabularies = await _mediator.Send(new GetAllVocabulariesQuery());
@@ -36,6 +39,8 @@ public class VocabulariesController : ControllerBase
         return Ok(vocabularies);
     }
     [HttpGet("{id:int}")]
+    [AllowAnonymous]
+
     public async Task<IActionResult> GetById(int id)
     {
         var vocabulary = await _mediator.Send(new GetVocabularyByIdQuery(id));

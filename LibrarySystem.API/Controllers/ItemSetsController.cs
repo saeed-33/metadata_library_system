@@ -11,6 +11,7 @@ namespace LibrarySystem.API.Controllers;
 
 [ApiController]
 [Route("api/item-sets")]
+
 public class ItemSetsController : ControllerBase
 {
     private readonly IMediator _mediator;
@@ -21,6 +22,8 @@ public class ItemSetsController : ControllerBase
     }
 
     [HttpGet]
+    [AllowAnonymous]
+
     public async Task<IActionResult> GetAll()
     {
         var itemSets = await _mediator.Send(new GetAllItemSetsQuery());
@@ -36,6 +39,8 @@ public class ItemSetsController : ControllerBase
     }
 
     [HttpGet("{id:int}")]
+    [AllowAnonymous]
+
     public async Task<IActionResult> GetById(int id)
     {
         var itemSet = await _mediator.Send(new GetItemSetByIdQuery(id));

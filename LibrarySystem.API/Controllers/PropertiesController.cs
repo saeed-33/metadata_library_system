@@ -9,6 +9,7 @@ namespace LibrarySystem.API.Controllers;
 
 [ApiController]
 [Route("api/properties")]
+
 public class PropertiesController : ControllerBase
 {
     private readonly IMediator _mediator;
@@ -20,6 +21,8 @@ public class PropertiesController : ControllerBase
 
     // GET api/properties
     [HttpGet]
+    [AllowAnonymous]
+
     public async Task<IActionResult> GetAll()
     {
         var properties = await _mediator.Send(new GetAllPropertiesQuery());
@@ -37,6 +40,8 @@ public class PropertiesController : ControllerBase
 
     // GET api/properties/by-vocabulary/3
     [HttpGet("by-vocabulary/{vocabularyId:int}")]
+    [AllowAnonymous]
+
     public async Task<IActionResult> GetByVocabulary(int vocabularyId)
     {
         var properties = await _mediator.Send(
@@ -45,6 +50,8 @@ public class PropertiesController : ControllerBase
     }
 
     [HttpGet("{id:int}")]
+    [AllowAnonymous]
+
     public async Task<IActionResult> GetById(int id)
     {
         var property = await _mediator.Send(new GetPropertyByIdQuery(id));
@@ -91,6 +98,8 @@ public class PropertiesController : ControllerBase
     }
 
     [HttpGet("searchable-fields")]
+    [AllowAnonymous]
+
     public async Task<IActionResult> GetSearchableFields()
     {
         var fields = await _mediator.Send(new GetSearchableFieldsQuery());

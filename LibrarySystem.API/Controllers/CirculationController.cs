@@ -19,7 +19,7 @@ public class CirculationController : ControllerBase
     public CirculationController(IMediator mediator) => _mediator = mediator;
 
     [HttpPost("checkout")]
-    public async Task<IActionResult> Checkout([FromBody] CheckoutCommand command)
+    public async Task<IActionResult> Checkout([FromBody] Application.DTOs.Circulation.CheckoutCommand command)
     {
         var result = await _mediator.Send(command);
         return Ok(new { success = result, message = "تمت عملية الإعارة بنجاح" });

@@ -12,12 +12,7 @@ using LibrarySystem.Application.DTOs.Circulation;
 
 namespace LibrarySystem.Application.Commands.Circulation
 {
-    public record CheckoutCommand(
-        string Barcode,
-        int PatronId,
-        DateTime? CustomDueDate = null
-    ) : IRequest<bool>;
-
+  
     public class CheckoutCommandHandler : IRequestHandler<CheckoutCommand, bool>
     {
         private readonly IUnitOfWork _unitOfWork;

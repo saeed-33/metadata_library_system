@@ -30,7 +30,6 @@ namespace LibrarySystem.Application.Commands.ItemCopies
             // 2. Fetch the template
             var template = await _unitOfWork.ResourceTemplates.GetByIdAsync(item!.TemplateId!.Value);
 
-            var template = await _unitOfWork.ResourceTemplates.GetByIdAsync(item.TemplateId.Value);
 
             var copy = _mapper.Map<ItemCopy>(request);
             // إذا كان القالب لا يسمح بالإعارة، النسخة تكون مراجع فقط وإلا متاحة

@@ -10,9 +10,9 @@ using Microsoft.AspNetCore.Mvc;
 using System.Text.Json;
 namespace LibrarySystem.API.Controllers;
 
-[Authorize]
 [ApiController]
 [Route("api/media")]
+
 public class MediaController : ControllerBase
 {
     private readonly IMediator _mediator;
@@ -24,6 +24,8 @@ public class MediaController : ControllerBase
     }
 
     [HttpGet("by-item/{itemId:int}")]
+    [AllowAnonymous]
+
     public async Task<IActionResult> GetByItem(int itemId)
     {
         var mediaList = await _mediator.Send(new GetMediaByItemQuery(itemId));
@@ -31,6 +33,8 @@ public class MediaController : ControllerBase
     }
 
     [HttpGet("{id:int}")]
+    [AllowAnonymous]
+
     public async Task<IActionResult> GetById(int id)
     {
         var media = await _mediator.Send(new GetMediaByIdQuery(id));
@@ -38,6 +42,7 @@ public class MediaController : ControllerBase
     }
 
     [HttpPost]
+    [Authorize(Roles = SystemRoles.Admin)]
     public async Task<IActionResult> Create(CreateMediaCommand command)
     {
         var id = await _mediator.Send(command);
@@ -45,6 +50,8 @@ public class MediaController : ControllerBase
     }
 
     [HttpPut("{id:int}")]
+    [Authorize(Roles = SystemRoles.Admin)]
+
     public async Task<IActionResult> Update(int id, UpdateMediaCommand command)
     {
         if (id != command.Id)
@@ -55,6 +62,8 @@ public class MediaController : ControllerBase
     }
 
     [HttpDelete("{id:int}")]
+    [Authorize(Roles = SystemRoles.Admin)]
+
     public async Task<IActionResult> Delete(int id)
     {
         var deleted = await _mediator.Send(new DeleteMediaCommand(id));
@@ -62,6 +71,8 @@ public class MediaController : ControllerBase
     }
 
     [HttpPost("upload-with-metadata")]
+    [Authorize(Roles = SystemRoles.Admin)]
+
     public async Task<IActionResult> UploadWithMetadata([FromForm] UploadMediaRequestDto request)
     {
         if (request.File == null || request.File.Length == 0)
@@ -110,7 +121,10 @@ public class MediaController : ControllerBase
             return StatusCode(500, "An error occurred while saving data; file upload was rolled back.");
         }
     }
+    
     [HttpGet]
+    [AllowAnonymous]
+
     public async Task<IActionResult> GetAll()
     {
         var mediaList = await _mediator.Send(new GetAllMediaQuery());
@@ -126,9 +140,9 @@ public class MediaController : ControllerBase
         return Ok(mediaList);
     }
 
-    [HttpPut("Undelet/{id:int}")]
+    [HttpPut("Undelete/{id:int}")]
     [Authorize(Roles = SystemRoles.Admin)]
-    public async Task<IActionResult> Undelet(int id, UndeleteMediaCommand command)
+    public async Task<IActionResult> Undelete(int id, UndeleteMediaCommand command)
     {
         if (id != command.Id)
             return BadRequest("URL id does not match command id.");

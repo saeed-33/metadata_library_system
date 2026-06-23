@@ -5,10 +5,12 @@ public class ResourceTemplateAdminResponse
     public int Id { get; set; }
     public string Label { get; set; } = string.Empty;
     public string? Description { get; set; }
+    public bool IsBorrowable { get; set; }
+    public int? DefaultBorrowDays { get; set; }
     public List<TemplatePropertyAdminResponse> Properties { get; set; } = new();
-    public bool IsDeleted { get; set; } // <--- الإضافة هنا
-
+    public bool IsDeleted { get; set; }
 }
+
 
 public class TemplatePropertyAdminResponse
 {

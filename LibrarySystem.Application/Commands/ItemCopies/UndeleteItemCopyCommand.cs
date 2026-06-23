@@ -1,9 +1,9 @@
 using LibrarySystem.Application.Interfaces;
 using MediatR;
+using LibrarySystem.Application.DTOs.ItemCopies;
 
 namespace LibrarySystem.Application.Commands.ItemCopies;
 
-public record UndeleteItemCopyCommand(int Id) : IRequest<bool>;
 
 public class UndeleteItemCopyCommandHandler : IRequestHandler<UndeleteItemCopyCommand, bool>
 {

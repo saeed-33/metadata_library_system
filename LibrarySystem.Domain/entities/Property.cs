@@ -11,7 +11,7 @@ namespace LibrarySystem.Domain.Entities
         public virtual Vocabulary Vocabulary { get; set; } = null!;
         public string LocalName { get; set; } = null!;
         public string Label { get; set; } = null!;
-        public string TermUri { get; set; } = null!;
+        public string TermUri { get; set; } = null!; // link that define the meaning of this property
 
         public bool IsSearchable { get; set; } = false;
     }

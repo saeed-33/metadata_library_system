@@ -4,12 +4,11 @@ using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
-
+using LibrarySystem.Application.DTOs.Bookmarks;
 namespace LibrarySystem.API.Controllers;
 
 [ApiController]
 [Route("api/bookmarks")]
-[Authorize] // إجباري أن يكون المستخدم مسجل الدخول (يمتلك Token)
 public class BookmarksController : ControllerBase
 {
     private readonly IMediator _mediator;
@@ -30,10 +29,11 @@ public class BookmarksController : ControllerBase
     // 1. جلب مفضلة المستخدم الحالي
     // GET /api/bookmarks
     [HttpGet]
+    [AllowAnonymous]
     public async Task<IActionResult> GetBookmarks()
     {
         var externalUserId = GetUserIdFromToken();
-        if (string.IsNullOrEmpty(externalUserId)) return Unauthorized();
+        if (string.IsNullOrEmpty(externalUserId)) return Ok(Array.Empty<int>());
 
         var bookmarks = await _mediator.Send(new GetUserBookmarksQuery(externalUserId));
 
@@ -44,6 +44,7 @@ public class BookmarksController : ControllerBase
     // 2. إضافة عنصر للمفضلة
     // POST /api/bookmarks/{itemId}
     [HttpPost("{itemId:int}")]
+    [Authorize]
     public async Task<IActionResult> AddBookmark(int itemId)
     {
         var externalUserId = GetUserIdFromToken();
@@ -58,6 +59,7 @@ public class BookmarksController : ControllerBase
     // 3. إزالة عنصر من المفضلة
     // DELETE /api/bookmarks/{itemId}
     [HttpDelete("{itemId:int}")]
+    [Authorize]
     public async Task<IActionResult> RemoveBookmark(int itemId)
     {
         var externalUserId = GetUserIdFromToken();

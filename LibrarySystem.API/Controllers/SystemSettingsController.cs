@@ -9,7 +9,8 @@ namespace LibrarySystem.API.Controllers;
 
 [ApiController]
 [Route("api/system-settings")]
-[Authorize]
+
+
 public class SystemSettingsController : ControllerBase
 {
     private readonly IMediator _mediator;
@@ -20,6 +21,10 @@ public class SystemSettingsController : ControllerBase
     }
 
     [HttpGet]
+    [AllowAnonymous]
+
+    [Authorize(Roles = $"{SystemRoles.Admin},{SystemRoles.Librarian}")]
+
     public async Task<IActionResult> GetAll()
     {
         var settings = await _mediator.Send(new GetSystemSettingsQuery());

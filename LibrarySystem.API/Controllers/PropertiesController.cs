@@ -7,9 +7,9 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace LibrarySystem.API.Controllers;
 
-[Authorize]
 [ApiController]
 [Route("api/properties")]
+
 public class PropertiesController : ControllerBase
 {
     private readonly IMediator _mediator;
@@ -21,6 +21,8 @@ public class PropertiesController : ControllerBase
 
     // GET api/properties
     [HttpGet]
+    [AllowAnonymous]
+
     public async Task<IActionResult> GetAll()
     {
         var properties = await _mediator.Send(new GetAllPropertiesQuery());
@@ -30,7 +32,6 @@ public class PropertiesController : ControllerBase
 
     [HttpGet("WithDeleted")]
     [Authorize(Roles = SystemRoles.Admin)]
-
     public async Task<IActionResult> GetAllWithDeleted()
     {
         var properties = await _mediator.Send(new GetAllPropertiesWithDeletedQuery());
@@ -39,6 +40,8 @@ public class PropertiesController : ControllerBase
 
     // GET api/properties/by-vocabulary/3
     [HttpGet("by-vocabulary/{vocabularyId:int}")]
+    [AllowAnonymous]
+
     public async Task<IActionResult> GetByVocabulary(int vocabularyId)
     {
         var properties = await _mediator.Send(
@@ -47,6 +50,8 @@ public class PropertiesController : ControllerBase
     }
 
     [HttpGet("{id:int}")]
+    [AllowAnonymous]
+
     public async Task<IActionResult> GetById(int id)
     {
         var property = await _mediator.Send(new GetPropertyByIdQuery(id));
@@ -54,6 +59,7 @@ public class PropertiesController : ControllerBase
     }
 
     [HttpPost]
+    [Authorize(Roles = SystemRoles.Admin)]
     public async Task<IActionResult> Create(CreatePropertyCommand command)
     {
         var id = await _mediator.Send(command);
@@ -61,6 +67,8 @@ public class PropertiesController : ControllerBase
     }
 
     [HttpPut("{id:int}")]
+    [Authorize(Roles = SystemRoles.Admin)]
+
     public async Task<IActionResult> Update(int id, UpdatePropertyCommand command)
     {
         if (id != command.Id)
@@ -71,15 +79,16 @@ public class PropertiesController : ControllerBase
     }
 
     [HttpDelete("{id:int}")]
+    [Authorize(Roles = SystemRoles.Admin)]
     public async Task<IActionResult> Delete(int id)
     {
         var deleted = await _mediator.Send(new DeletePropertyCommand(id));
         return deleted ? NoContent() : NotFound();
     }
 
-    [HttpPut("Undelet/{id:int}")]
+    [HttpPut("Undelete/{id:int}")]
     [Authorize(Roles = SystemRoles.Admin)]
-    public async Task<IActionResult> Undelet(int id, UndeletePropertyCommand command)
+    public async Task<IActionResult> Undelete(int id, UndeletePropertyCommand command)
     {
         if (id != command.Id)
             return BadRequest("URL id does not match command id.");
@@ -89,6 +98,8 @@ public class PropertiesController : ControllerBase
     }
 
     [HttpGet("searchable-fields")]
+    [AllowAnonymous]
+
     public async Task<IActionResult> GetSearchableFields()
     {
         var fields = await _mediator.Send(new GetSearchableFieldsQuery());

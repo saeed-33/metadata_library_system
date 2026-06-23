@@ -5,8 +5,10 @@ using LibrarySystem.Domain.Enums;
 using MediatR;
 using System;
 using System.Linq;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using LibrarySystem.Application.DTOs.Circulation;
 
 namespace LibrarySystem.Application.Commands.Circulation
 {
@@ -63,7 +65,7 @@ namespace LibrarySystem.Application.Commands.Circulation
             {
                 dueDate = request.CustomDueDate.Value;
             }
-            else if (template.DefaultBorrowDays.HasValue)
+            else if (template!.DefaultBorrowDays.HasValue)
             {
                 dueDate = DateTime.UtcNow.AddDays(template.DefaultBorrowDays.Value);
             }
@@ -71,7 +73,7 @@ namespace LibrarySystem.Application.Commands.Circulation
             {
                 var settings = await _unitOfWork.SystemSettings.GetAllAsync();
                 var globalDays = settings.FirstOrDefault(s => s.Key == "GlobalBorrowDays")?.Value;
-                int days = int.TryParse(globalDays, out var d) ? d : 14; // الافتراضي 14 يوم
+                int days = int.TryParse(globalDays, out var d) ? d : 14; // Default 14 days
                 dueDate = DateTime.UtcNow.AddDays(days);
             }
 

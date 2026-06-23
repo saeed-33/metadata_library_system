@@ -7,9 +7,9 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace LibrarySystem.API.Controllers;
 
-[Authorize]
 [ApiController]
 [Route("api/items")]
+
 public class ItemsController : ControllerBase
 {
     private readonly IMediator _mediator;
@@ -20,6 +20,8 @@ public class ItemsController : ControllerBase
     }
 
     [HttpGet]
+    [AllowAnonymous]
+
     public async Task<IActionResult> GetAll()
     {
         var items = await _mediator.Send(new GetAllItemsQuery());
@@ -34,7 +36,10 @@ public class ItemsController : ControllerBase
         var items = await _mediator.Send(new GetAllItemsWithDeletedQuery());
         return Ok(items);
     }
+   
     [HttpGet("{id:int}")]
+    [AllowAnonymous]
+
     public async Task<IActionResult> GetById(int id)
     {
         var item = await _mediator.Send(new GetItemByIdQuery(id));
@@ -42,6 +47,8 @@ public class ItemsController : ControllerBase
     }
 
     [HttpGet("{id:int}/copies")]
+    [AllowAnonymous]
+
     public async Task<IActionResult> GetWithCopies(int id)
     {
         var item = await _mediator.Send(new GetItemWithCopiesQuery(id));
@@ -49,6 +56,7 @@ public class ItemsController : ControllerBase
     }
 
     [HttpPost]
+    [Authorize(Roles = $"{SystemRoles.Admin},{SystemRoles.Librarian}")]
     public async Task<IActionResult> Create(CreateItemCommand command)
     {
         var id = await _mediator.Send(command);
@@ -56,6 +64,7 @@ public class ItemsController : ControllerBase
     }
 
     [HttpPut("{id:int}")]
+    [Authorize(Roles = $"{SystemRoles.Admin},{SystemRoles.Librarian}")]
     public async Task<IActionResult> Update(int id, UpdateItemCommand command)
     {
         if (id != command.Id)
@@ -65,9 +74,10 @@ public class ItemsController : ControllerBase
         return updated ? NoContent() : NotFound();
     }
 
-    [HttpPut("Undelet/{id:int}")]
-    [Authorize(Roles = SystemRoles.Admin)]
-    public async Task<IActionResult> Undelet(int id, UndeletItemCommand command)
+    [HttpPut("Undelete/{id:int}")]
+    [Authorize(Roles = $"{SystemRoles.Admin},{SystemRoles.Librarian}")]
+
+    public async Task<IActionResult> Undelete(int id, UndeletItemCommand command)
     {
         if (id != command.Id)
             return BadRequest("URL id does not match command id.");
@@ -77,6 +87,7 @@ public class ItemsController : ControllerBase
     }
 
     [HttpDelete("{id:int}")]
+    [Authorize(Roles = $"{SystemRoles.Admin},{SystemRoles.Librarian}")]
     public async Task<IActionResult> Delete(int id)
     {
         var deleted = await _mediator.Send(new DeleteItemCommand(id));

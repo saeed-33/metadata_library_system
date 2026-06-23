@@ -9,9 +9,9 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace LibrarySystem.API.Controllers;
 
-[Authorize]
 [ApiController]
 [Route("api/vocabularies")]
+
 public class VocabulariesController : ControllerBase
 {
     private readonly IMediator _mediator;
@@ -22,6 +22,8 @@ public class VocabulariesController : ControllerBase
     }
 
     [HttpGet]
+    [AllowAnonymous]
+
     public async Task<IActionResult> GetAll()
     {
         var vocabularies = await _mediator.Send(new GetAllVocabulariesQuery());
@@ -37,6 +39,8 @@ public class VocabulariesController : ControllerBase
         return Ok(vocabularies);
     }
     [HttpGet("{id:int}")]
+    [AllowAnonymous]
+
     public async Task<IActionResult> GetById(int id)
     {
         var vocabulary = await _mediator.Send(new GetVocabularyByIdQuery(id));
@@ -44,6 +48,7 @@ public class VocabulariesController : ControllerBase
     }
 
     [HttpPost]
+    [Authorize(Roles = SystemRoles.Admin)]
     public async Task<IActionResult> Create(CreateVocabularyCommand command)
     {
         var id = await _mediator.Send(command);
@@ -51,6 +56,8 @@ public class VocabulariesController : ControllerBase
     }
 
     [HttpPut("{id:int}")]
+    [Authorize(Roles = SystemRoles.Admin)]
+
     public async Task<IActionResult> Update(int id, UpdateVocabularyCommand command)
     {
         // Make sure the id in the URL matches the command
@@ -62,14 +69,15 @@ public class VocabulariesController : ControllerBase
     }
 
     [HttpDelete("{id:int}")]
+    [Authorize(Roles = SystemRoles.Admin)]
     public async Task<IActionResult> Delete(int id)
     {
         var deleted = await _mediator.Send(new DeleteVocabularyCommand(id));
         return deleted ? NoContent() : NotFound();
     }
-    [HttpPut("Undelet/{id:int}")]
+    [HttpPut("Undelete/{id:int}")]
     [Authorize(Roles = SystemRoles.Admin)]
-    public async Task<IActionResult> Undelet(int id, UndeleteVocabularyCommand command)
+    public async Task<IActionResult> Undelete(int id, UndeleteVocabularyCommand command)
     {
         if (id != command.Id)
             return BadRequest("URL id does not match command id.");

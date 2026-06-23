@@ -7,7 +7,6 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace LibrarySystem.API.Controllers;
 
-[Authorize]
 [ApiController]
 [Route("api/[controller]")]
 public class PatronsController : ControllerBase
@@ -16,13 +15,15 @@ public class PatronsController : ControllerBase
     public PatronsController(IMediator mediator) => _mediator = mediator;
 
     [HttpGet]
+    [Authorize(Roles = $"{SystemRoles.Admin},{SystemRoles.Librarian}")]
+
     public async Task<IActionResult> GetAll([FromQuery] string? search)
     {
         var result = await _mediator.Send(new GetPatronsQuery(search));
         return Ok(result);
     }
 
-    [HttpGet("AllWithDeleted")]
+    [HttpGet("WithDeleted")]
     [Authorize(Roles = SystemRoles.Admin)]
     public async Task<IActionResult> GetAllWithDeleted()
     {
@@ -31,6 +32,8 @@ public class PatronsController : ControllerBase
     }
 
     [HttpGet("{id:int}")]
+    [Authorize(Roles = $"{SystemRoles.Admin},{SystemRoles.Librarian}")]
+
     public async Task<IActionResult> GetById(int id)
     {
         var patron = await _mediator.Send(new GetPatronByIdQuery(id));
@@ -38,6 +41,8 @@ public class PatronsController : ControllerBase
     }
 
     [HttpPost]
+    [Authorize(Roles = $"{SystemRoles.Admin},{SystemRoles.Librarian}")]
+
     public async Task<IActionResult> Create([FromBody] CreatePatronCommand command)
     {
         var id = await _mediator.Send(command);
@@ -45,6 +50,8 @@ public class PatronsController : ControllerBase
     }
 
     [HttpPut("{id:int}")]
+    [Authorize(Roles = $"{SystemRoles.Admin},{SystemRoles.Librarian}")]
+
     public async Task<IActionResult> Update(int id, [FromBody] UpdatePatronCommand command)
     {
         if (id != command.Id)
@@ -55,6 +62,8 @@ public class PatronsController : ControllerBase
     }
 
     [HttpDelete("{id:int}")]
+    [Authorize(Roles = $"{SystemRoles.Admin},{SystemRoles.Librarian}")]
+
     public async Task<IActionResult> Delete(int id)
     {
         var deleted = await _mediator.Send(new DeletePatronCommand(id));

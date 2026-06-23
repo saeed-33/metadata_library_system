@@ -9,7 +9,8 @@ public record UpdatePropertyCommand(
     int VocabularyId,
     string LocalName,
     string Label,
-    string TermUri
+    string TermUri,
+     bool IsSearchable = false
 ) : IRequest<bool>;
 
 public class UpdatePropertyCommandHandler : IRequestHandler<UpdatePropertyCommand, bool>

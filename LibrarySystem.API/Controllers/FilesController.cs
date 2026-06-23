@@ -1,13 +1,15 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using LibrarySystem.Domain.common;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Processing;
 
 namespace LibrarySystem.API.Controllers
 {
-    [Authorize]
     [ApiController]
     [Route("api/[controller]")]
+    [Authorize(Roles = SystemRoles.Admin)]
+
     public class FilesController : ControllerBase
     {
         private readonly IWebHostEnvironment _environment;

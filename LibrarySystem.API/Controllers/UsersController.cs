@@ -10,7 +10,7 @@ namespace LibrarySystem.API.Controllers;
 
 [ApiController]
 [Route("api/users")]
-[Authorize] // all endpoints require a valid JWT token
+[Authorize(Roles = SystemRoles.Admin)]
 public class UsersController : ControllerBase
 {
     private readonly IMediator _mediator;
@@ -22,7 +22,6 @@ public class UsersController : ControllerBase
 
     // Only Admin can see all users
     [HttpGet]
-    [Authorize(Roles = SystemRoles.Admin)]
     public async Task<IActionResult> GetAll()
     {
         var users = await _mediator.Send(new GetAllUsersQuery());
@@ -30,7 +29,6 @@ public class UsersController : ControllerBase
     }
     
     [HttpGet("withDeleted")]
-    [Authorize(Roles = SystemRoles.Admin)]
     public async Task<IActionResult> GetAllWitDeleted()
     {
         var users = await _mediator.Send(new GetAllWithDeletedUsersQuery());
@@ -47,7 +45,6 @@ public class UsersController : ControllerBase
     // Only Admin can create users manually
     // Normal users are created automatically during Register in AuthController
     [HttpPost]
-    [Authorize(Roles = SystemRoles.Admin)]
     public async Task<IActionResult> Create(CreateSystemUserCommand command)
     {
         var id = await _mediator.Send(command);
@@ -66,15 +63,14 @@ public class UsersController : ControllerBase
 
     // Only Admin can delete users
     [HttpDelete("{id:int}")]
-    [Authorize(Roles = SystemRoles.Admin)]
     public async Task<IActionResult> Delete(int id)
     {
         var deleted = await _mediator.Send(new DeleteSystemUserCommand(id));
         return deleted ? NoContent() : NotFound();
     }
 
-    [HttpPut("Undelet/{id:int}")]
-    public async Task<IActionResult> Undelet(int id, UndeleteSystemUserCommand command)
+    [HttpPut("Undelete/{id:int}")]
+    public async Task<IActionResult> Undelete(int id, UndeleteSystemUserCommand command)
     {
         if (id != command.Id)
             return BadRequest("URL id does not match command id.");
@@ -84,7 +80,6 @@ public class UsersController : ControllerBase
     }
     //NEW ENDPOINT: Only Admin can update a user's roles
     [HttpPut("{id:int}/roles")]
-    [Authorize(Roles = SystemRoles.Admin)]
     public async Task<IActionResult> UpdateRoles(int id, UpdateSystemUserRolesCommand command)
     {
         if (id != command.Id)

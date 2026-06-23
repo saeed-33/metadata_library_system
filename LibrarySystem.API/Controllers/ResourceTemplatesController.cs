@@ -8,9 +8,9 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace LibrarySystem.API.Controllers;
 
-[Authorize]
 [ApiController]
 [Route("api/resource-templates")]
+
 public class ResourceTemplatesController : ControllerBase
 {
     private readonly IMediator _mediator;
@@ -21,6 +21,8 @@ public class ResourceTemplatesController : ControllerBase
     }
 
     [HttpGet]
+    [AllowAnonymous]
+
     public async Task<IActionResult> GetAll()
     {
         var templates = await _mediator.Send(new GetAllResourceTemplatesQuery());
@@ -37,6 +39,8 @@ public class ResourceTemplatesController : ControllerBase
     }
 
     [HttpGet("{id:int}")]
+    [AllowAnonymous]
+
     public async Task<IActionResult> GetById(int id)
     {
         var template = await _mediator.Send(new GetResourceTemplateByIdQuery(id));
@@ -44,6 +48,8 @@ public class ResourceTemplatesController : ControllerBase
     }
 
     [HttpPost]
+    [Authorize(Roles = SystemRoles.Admin)]
+
     public async Task<IActionResult> Create(CreateResourceTemplateCommand command)
     {
         var id = await _mediator.Send(command);
@@ -51,6 +57,8 @@ public class ResourceTemplatesController : ControllerBase
     }
 
     [HttpPut("{id:int}")]
+    [Authorize(Roles = SystemRoles.Admin)]
+
     public async Task<IActionResult> Update(int id, UpdateResourceTemplateCommand command)
     {
         if (id != command.Id)
@@ -63,6 +71,8 @@ public class ResourceTemplatesController : ControllerBase
     // This endpoint manages which properties belong to the template
     // PUT api/resource-templates/5/properties
     [HttpPut("{id:int}/properties")]
+    [Authorize(Roles = SystemRoles.Admin)]
+
     public async Task<IActionResult> UpdateProperties(int id, UpdateTemplatePropertiesCommand command)
     {
         if (id != command.TemplateId)
@@ -73,6 +83,8 @@ public class ResourceTemplatesController : ControllerBase
     }
 
     [HttpDelete("{id:int}")]
+    [Authorize(Roles = SystemRoles.Admin)]
+
     public async Task<IActionResult> Delete(int id)
     {
         var result = await _mediator.Send(new DeleteResourceTemplateCommand(id));
@@ -89,9 +101,9 @@ public class ResourceTemplatesController : ControllerBase
         return NoContent();
     }
 
-    [HttpPut("Undelet/{id:int}")]
+    [HttpPut("Undelete/{id:int}")]
     [Authorize(Roles = SystemRoles.Admin)]
-    public async Task<IActionResult> Undelet(int id, UndeleteResourceTemplateCommand command)
+    public async Task<IActionResult> Undelete(int id, UndeleteResourceTemplateCommand command)
     {
         if (id != command.Id)
             return BadRequest("URL id does not match command id.");

@@ -4,7 +4,13 @@ using MediatR;
 
 namespace LibrarySystem.Application.Commands.ResourceTemplates;
 
-public record UpdateResourceTemplateCommand(int Id, string Label, string? Description) : IRequest<bool>;
+public record UpdateResourceTemplateCommand(
+    int Id,
+    string Label,
+    string? Description,
+    bool IsBorrowable,
+    int? DefaultBorrowDays
+) : IRequest<bool>;
 
 public class UpdateResourceTemplateCommandHandler : IRequestHandler<UpdateResourceTemplateCommand, bool>
 {

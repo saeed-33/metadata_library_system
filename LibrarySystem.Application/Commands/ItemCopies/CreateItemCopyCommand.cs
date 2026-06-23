@@ -1,6 +1,7 @@
 using AutoMapper;
 using LibrarySystem.Application.Interfaces;
 using LibrarySystem.Domain.Entities;
+using LibrarySystem.Domain.Enums;
 using MediatR;
 using System;
 using System.Threading;
@@ -29,12 +30,11 @@ namespace LibrarySystem.Application.Commands.ItemCopies
             if (!item.TemplateId.HasValue)
                 throw new InvalidOperationException("هذا الكتاب غير مرتبط بقالب مصادر.");
 
-            // الآن نرسل القيمة بعد التأكد أنها ليست Null باستخدام .Value
             var template = await _unitOfWork.ResourceTemplates.GetByIdAsync(item.TemplateId.Value);
 
             var copy = _mapper.Map<ItemCopy>(request);
-            // إذا كان القالب لا يسمح بالإعارة، النسخة تكون مراجع فقط (2) وإلا متاحة (0)
-            copy.Status = (template != null && !template.IsBorrowable) ? 2 : 0;
+            // إذا كان القالب لا يسمح بالإعارة، النسخة تكون مراجع فقط وإلا متاحة
+            copy.Status = (template != null && !template.IsBorrowable) ? ItemCopyStatus.ReferenceOnly : ItemCopyStatus.Available;
 
             await _unitOfWork.ItemCopies.AddAsync(copy);
             await _unitOfWork.SaveChangesAsync();

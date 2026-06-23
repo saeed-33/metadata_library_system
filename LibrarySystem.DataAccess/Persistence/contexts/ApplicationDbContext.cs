@@ -140,7 +140,7 @@ namespace LibrarySystem.DataAccess.Persistence.Contexts
                     entry.Entity.DeletedAt = DateTime.UtcNow;
                 }
             }
-            foreach (var entry in ChangeTracker.Entries<IAuditable>())
+            foreach (var entry in ChangeTracker.Entries<BasePersistenceModel>())
             {
                 if (entry.State == EntityState.Added) entry.Entity.CreatedAt = DateTime.UtcNow;
                 else if (entry.State == EntityState.Modified) entry.Entity.ModifiedAt = DateTime.UtcNow;

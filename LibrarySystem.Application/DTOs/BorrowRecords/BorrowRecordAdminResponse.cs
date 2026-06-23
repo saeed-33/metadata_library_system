@@ -15,6 +15,5 @@ public class BorrowRecordAdminResponse : BorrowRecordResponse
 
     // حقول عرض للواجهة
     public string CopyBarcode { get; set; } = string.Empty;
-    public string ItemTitle { get; set; } = string.Empty;
     public string PatronName { get; set; } = string.Empty;
 }

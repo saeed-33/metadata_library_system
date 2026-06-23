@@ -1,6 +1,7 @@
 using AutoMapper;
 using LibrarySystem.Application.DTOs.Items;
 using LibrarySystem.Application.Interfaces;
+using LibrarySystem.Domain.Enums;
 using MediatR;
 
 namespace LibrarySystem.Application.Queries.Items;
@@ -28,7 +29,7 @@ public class GetItemWithCopiesHandler : IRequestHandler<GetItemWithCopiesQuery, 
 
         var response = _mapper.Map<ItemResponse>(item);
         response.TotalCopies = itemCopies.Count;
-        response.AvailableCopies = itemCopies.Count(c => c.Status == 0);
+        response.AvailableCopies = itemCopies.Count(c => c.Status == ItemCopyStatus.Available);
 
         return response;
     }

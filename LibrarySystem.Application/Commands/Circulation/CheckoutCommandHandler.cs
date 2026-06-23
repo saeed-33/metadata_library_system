@@ -1,13 +1,21 @@
 using AutoMapper;
 using LibrarySystem.Application.Interfaces;
 using LibrarySystem.Domain.Entities;
+using LibrarySystem.Domain.Enums;
 using MediatR;
 using System;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
 namespace LibrarySystem.Application.Commands.Circulation
 {
+    public record CheckoutCommand(
+        string Barcode,
+        int PatronId,
+        DateTime? CustomDueDate = null
+    ) : IRequest<bool>;
+
     public class CheckoutCommandHandler : IRequestHandler<CheckoutCommand, bool>
     {
         private readonly IUnitOfWork _unitOfWork;
@@ -21,32 +29,35 @@ namespace LibrarySystem.Application.Commands.Circulation
 
         public async Task<bool> Handle(CheckoutCommand request, CancellationToken cancellationToken)
         {
-            // 1. البحث عن النسخة بواسطة الباركود
-            // ملاحظة: قد تحتاج لإضافة ميثود GetByBarcode في المستودع أو استخدام Find
+            // 1. التحقق من وجود المستعير
+            var patron = await _unitOfWork.Patrons.GetByIdAsync(request.PatronId);
+            if (patron == null)
+                throw new InvalidOperationException("المستعير غير موجود.");
+
+            // 2. البحث عن النسخة بواسطة الباركود
             var allCopies = await _unitOfWork.ItemCopies.GetAllAsync();
             var copy = allCopies.FirstOrDefault(c => c.Barcode == request.Barcode);
 
-            if (copy == null) throw new InvalidOperationException("النسخة غير موجودة.");
+            if (copy == null)
+                throw new InvalidOperationException("النسخة غير موجودة.");
 
-            // 2. التحقق من حالة النسخة (يجب أن تكون 0: Available)
-            if (copy.Status != 0) throw new InvalidOperationException("هذه النسخة غير متاحة حالياً (معارة أو تحت الصيانة).");
+            // 3. التحقق من أن النسخة متاحة
+            if (copy.Status != ItemCopyStatus.Available)
+                throw new InvalidOperationException("هذه النسخة غير متاحة حالياً (معارة أو تحت الصيانة).");
 
-            // 3. التحقق من سياسة الإعارة للقالب
+            // 4. التحقق من سياسة الإعارة للقالب
             var item = await _unitOfWork.Items.GetByIdAsync(copy.ItemId);
+            if (item == null)
+                throw new InvalidOperationException("الكتاب غير موجود.");
 
-            // التحقق من أن الكتاب موجود أولاً
-            if (item == null) throw new InvalidOperationException("الكتاب غير موجود.");
+            if (!item.TemplateId.HasValue)
+                throw new InvalidOperationException("هذا الكتاب غير مرتبط بقالب مصادر.");
 
-            // التحقق من أن القالب مرتبط بالكتاب قبل استخدامه
-            if (!item.TemplateId.HasValue) throw new InvalidOperationException("هذا الكتاب غير مرتبط بقالب مصادر.");
-
-            // الآن نرسل القيمة بعد التأكد أنها ليست Null باستخدام .Value
             var template = await _unitOfWork.ResourceTemplates.GetByIdAsync(item.TemplateId.Value);
-
             if (template == null || !template.IsBorrowable)
                 throw new InvalidOperationException("هذا الصنف مخصص للمراجع فقط ولا يُسمح بإعارته.");
 
-            // 4. الحساب الذكي لتاريخ الاستحقاق (Due Date)
+            // 5. حساب تاريخ الاستحقاق
             DateTime dueDate;
             if (request.CustomDueDate.HasValue)
             {
@@ -64,18 +75,19 @@ namespace LibrarySystem.Application.Commands.Circulation
                 dueDate = DateTime.UtcNow.AddDays(days);
             }
 
-            // 5. إنشاء سجل الإعارة
+            // 6. إنشاء سجل الإعارة
             var borrowRecord = _mapper.Map<BorrowRecord>(request);
             borrowRecord.CopyId = copy.Id;
             borrowRecord.BorrowDate = DateTime.UtcNow;
             borrowRecord.DueDate = dueDate;
-            borrowRecord.Status = "Active";
+            borrowRecord.Status = BorrowRecordStatus.Active;
+            borrowRecord.OriginalCopyStatus = copy.Status; // حفظ الحالة الأصلية للاستعادة عند الإرجاع
 
-            // 6. تحديث حالة النسخة إلى "معارة" (1)
-            copy.Status = 1;
+            // 7. تحديث حالة النسخة إلى "معارة"
+            copy.Status = ItemCopyStatus.Borrowed;
 
             await _unitOfWork.BorrowRecords.AddAsync(borrowRecord);
-             _unitOfWork.ItemCopies.Update(copy);
+            _unitOfWork.ItemCopies.Update(copy);
             await _unitOfWork.SaveChangesAsync();
 
             return true;

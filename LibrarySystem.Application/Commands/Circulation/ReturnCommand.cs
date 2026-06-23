@@ -1,8 +1,9 @@
 using LibrarySystem.Application.Interfaces;
-using LibrarySystem.Domain.entities;
 using LibrarySystem.Domain.Entities;
+using LibrarySystem.Domain.Enums;
 using MediatR;
 using System;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -10,34 +11,37 @@ namespace LibrarySystem.Application.Commands.Circulation
 {
     public record ReturnCommand(string Barcode) : IRequest<bool>;
 
-public class ReturnCommandHandler : IRequestHandler<ReturnCommand, bool>
-{
-    private readonly IUnitOfWork _unitOfWork;
-    public ReturnCommandHandler(IUnitOfWork unitOfWork) => _unitOfWork = unitOfWork;
-
-    public async Task<bool> Handle(ReturnCommand request, CancellationToken ct)
+    public class ReturnCommandHandler : IRequestHandler<ReturnCommand, bool>
     {
-        var allCopies = await _unitOfWork.ItemCopies.GetAllAsync();
-        var copy = allCopies.FirstOrDefault(c => c.Barcode == request.Barcode);
-        if (copy == null) throw new InvalidOperationException("النسخة غير موجودة.");
+        private readonly IUnitOfWork _unitOfWork;
+        public ReturnCommandHandler(IUnitOfWork unitOfWork) => _unitOfWork = unitOfWork;
 
-        var allRecords = await _unitOfWork.BorrowRecords.GetAllAsync();
-        var activeRecord = allRecords.FirstOrDefault(r => r.CopyId == copy.Id && r.ReturnDate == null);
-        
-        if (activeRecord == null) throw new InvalidOperationException("لا يوجد سجل إعارة نشط لهذه النسخة.");
+        public async Task<bool> Handle(ReturnCommand request, CancellationToken ct)
+        {
+            var allCopies = await _unitOfWork.ItemCopies.GetAllAsync();
+            var copy = allCopies.FirstOrDefault(c => c.Barcode == request.Barcode);
+            if (copy == null)
+                throw new InvalidOperationException("النسخة غير موجودة.");
 
-        // تحديث السجل
-        activeRecord.ReturnDate = DateTime.UtcNow;
-        activeRecord.Status = "Returned";
+            var allRecords = await _unitOfWork.BorrowRecords.GetAllAsync();
+            var activeRecord = allRecords
+                .FirstOrDefault(r => r.CopyId == copy.Id && r.ReturnDate == null && r.Status == BorrowRecordStatus.Active);
 
-        // إعادة النسخة لتكون متاحة
-        copy.Status = 0;
+            if (activeRecord == null)
+                throw new InvalidOperationException("لا يوجد سجل إعارة نشط لهذه النسخة.");
 
-         _unitOfWork.BorrowRecords.Update(activeRecord);
-         _unitOfWork.ItemCopies.Update(copy);
-        await _unitOfWork.SaveChangesAsync();
+            // تحديث السجل
+            activeRecord.ReturnDate = DateTime.UtcNow;
+            activeRecord.Status = BorrowRecordStatus.Returned;
 
-        return true;
+            // استعادة الحالة الأصلية للنسخة (متاح، مرجعي فقط، صيانة...)
+            copy.Status = activeRecord.OriginalCopyStatus;
+
+            _unitOfWork.BorrowRecords.Update(activeRecord);
+            _unitOfWork.ItemCopies.Update(copy);
+            await _unitOfWork.SaveChangesAsync();
+
+            return true;
+        }
     }
-}
 }

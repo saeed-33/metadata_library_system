@@ -1,5 +1,7 @@
-﻿using LibrarySystem.Application.Interfaces;
+using LibrarySystem.Application.Interfaces;
 using MediatR;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace LibrarySystem.Application.Commands.Items;
 
@@ -13,19 +15,33 @@ public class DeleteItemCommandHandler : IRequestHandler<DeleteItemCommand, bool>
 
     public async Task<bool> Handle(DeleteItemCommand request, CancellationToken cancellationToken)
     {
-        // 1. جلب العنصر (نستخدم المستودع الخاص بالـ Items)
+        // جلب العنصر مع بياناته التابعة
         var item = await _unitOfWork.Items.GetByIdAsync(request.Id);
-
         if (item == null) return false;
 
-        // 2. تنفيذ الحذف
-        // ملاحظة للمناقشة: بما أن Item يرث من Resource الذي يرث من BasePersistenceModel
-        // فإن استدعاء Delete سيقوم تلقائياً بعمل Soft Delete وتحديث حقل IsDeleted
-        _unitOfWork.Items.Delete(item);
+        // حذف منطقي للقيم المرتبطة (Metadata Values)
+        var values = await _unitOfWork.Values.FindAsync(v => v.ResourceId == item.Id);
+        foreach (var value in values)
+        {
+            _unitOfWork.Values.Delete(value);
+        }
 
-        // 3. ماذا عن القيم المرتبطة (Values)؟
-        // في التصميم الاحترافي، إذا كان المورد محذوفاً (IsDeleted=true)، 
-        // فإن الاستعلامات (Queries) ستتجاهل قيمه تلقائياً بفضل الـ Global Query Filter
+        // حذف منطقي للنسخ المرتبطة
+        var copies = await _unitOfWork.ItemCopies.FindAsync(c => c.ItemId == item.Id);
+        foreach (var copy in copies)
+        {
+            _unitOfWork.ItemCopies.Delete(copy);
+        }
+
+        // حذف منطقي للوسائط المرتبطة
+        var media = await _unitOfWork.Medias.FindAsync(m => m.ItemId == item.Id);
+        foreach (var m in media)
+        {
+            _unitOfWork.Medias.Delete(m);
+        }
+
+        // حذف منطقي للعنصر نفسه
+        _unitOfWork.Items.Delete(item);
 
         await _unitOfWork.SaveChangesAsync();
         return true;

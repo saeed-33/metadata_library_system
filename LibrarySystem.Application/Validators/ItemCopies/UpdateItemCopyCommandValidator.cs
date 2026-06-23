@@ -1,5 +1,6 @@
 using FluentValidation;
 using LibrarySystem.Application.Commands.ItemCopies;
+using LibrarySystem.Domain.Enums;
 
 namespace LibrarySystem.Application.Validators.ItemCopies;
 
@@ -15,6 +16,6 @@ public class UpdateItemCopyCommandValidator : AbstractValidator<UpdateItemCopyCo
             .MaximumLength(100).WithMessage("الباركود يجب ألا يتجاوز 100 حرف.");
 
         RuleFor(x => x.Status)
-            .InclusiveBetween(0, 3).WithMessage("حالة النسخة غير صالحة.");
+            .IsInEnum().WithMessage("حالة النسخة غير صالحة.");
     }
 }

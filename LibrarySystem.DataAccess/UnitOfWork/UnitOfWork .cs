@@ -114,6 +114,8 @@ namespace LibrarySystem.DataAccess.Repositories
 
         public void Dispose() => _context.Dispose();
 
+        //Factory Method Pattern
+
         private IGenericRepository<TDomain> CreateRepository<TDomain, TPersistence>(IMapper mapper)
             where TDomain : class
             where TPersistence : class

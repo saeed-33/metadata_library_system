@@ -1,15 +1,10 @@
-using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations.Schema;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using LibrarySystem.Domain.Enums;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace LibrarySystem.DataAccess.Persistence.models
 {
     [Table("ItemCopies")]
-
     public class ItemCopyModel : BasePersistenceModel
     {
         [Required]
@@ -21,8 +16,7 @@ namespace LibrarySystem.DataAccess.Persistence.models
         public string Barcode { get; set; } = string.Empty;
 
         [Required]
-        [Range(0, 3)] // تحديد نطاق الحالات (متاح، معار، إلخ)
-        public int Status { get; set; }
+        public ItemCopyStatus Status { get; set; } = ItemCopyStatus.Available;
 
         [MaxLength(500)]
         public string? Notes { get; set; }

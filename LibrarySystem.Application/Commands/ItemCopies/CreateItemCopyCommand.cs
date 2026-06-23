@@ -1,6 +1,7 @@
 using AutoMapper;
 using LibrarySystem.Application.Interfaces;
 using LibrarySystem.Domain.Entities;
+using LibrarySystem.Domain.Enums;
 using MediatR;
 using System.Threading;
 using System.Threading.Tasks;
@@ -29,12 +30,10 @@ namespace LibrarySystem.Application.Commands.ItemCopies
             // 2. Fetch the template
             var template = await _unitOfWork.ResourceTemplates.GetByIdAsync(item!.TemplateId!.Value);
 
-            // 3. Map request to Entity
-            var copy = _mapper.Map<ItemCopy>(request);
 
-            // 4. Set Status based on Template rules
-            // If template doesn't allow borrowing, set to Reference Only (2), otherwise Available (0)
-            copy.Status = (template != null && !template.IsBorrowable) ? 2 : 0;
+            var copy = _mapper.Map<ItemCopy>(request);
+            // إذا كان القالب لا يسمح بالإعارة، النسخة تكون مراجع فقط وإلا متاحة
+            copy.Status = (template != null && !template.IsBorrowable) ? ItemCopyStatus.ReferenceOnly : ItemCopyStatus.Available;
 
             // 5. Save to database
             await _unitOfWork.ItemCopies.AddAsync(copy);

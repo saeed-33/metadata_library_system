@@ -14,7 +14,6 @@ public class BorrowRecordMappingProfile : Profile
 
         CreateMap<BorrowRecord, BorrowRecordAdminResponse>()
             .ForMember(dest => dest.CopyBarcode, opt => opt.MapFrom(src => src.Copy.Barcode))
-            .ForMember(dest => dest.ItemTitle, opt => opt.MapFrom(src => src.Copy.ItemId.ToString()))
             .ForMember(dest => dest.PatronName, opt => opt.MapFrom(src => src.Patron.FullName));
 
         // من Command الإعارة إلى Entity
@@ -24,7 +23,6 @@ public class BorrowRecordMappingProfile : Profile
         CreateMap<BorrowRecord, ActiveLoanDto>()
             .ForMember(dest => dest.RecordId, opt => opt.MapFrom(src => src.Id))
             .ForMember(dest => dest.CopyBarcode, opt => opt.MapFrom(src => src.Copy.Barcode))
-            .ForMember(dest => dest.ItemTitle, opt => opt.MapFrom(src => src.Copy.ItemId.ToString()))
             .ForMember(dest => dest.PatronName, opt => opt.MapFrom(src => src.Patron.FullName));
     }
 }

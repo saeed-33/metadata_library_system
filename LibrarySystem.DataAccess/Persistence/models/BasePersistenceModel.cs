@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace LibrarySystem.DataAccess.Persistence.models
 {
-    public abstract class BasePersistenceModel :ISoftDelete
+    public abstract class BasePersistenceModel :ISoftDelete 
     {
         [Key] public int Id { get; set; }
         [Required] public DateTime CreatedAt { get; set; }

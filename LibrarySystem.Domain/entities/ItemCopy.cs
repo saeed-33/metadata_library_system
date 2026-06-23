@@ -1,4 +1,5 @@
 using LibrarySystem.Domain.Common;
+using LibrarySystem.Domain.Enums;
 
 namespace LibrarySystem.Domain.Entities
 {
@@ -9,8 +10,7 @@ namespace LibrarySystem.Domain.Entities
 
     public string Barcode { get; set; } = string.Empty; // رقم فريد يوضع خلف الكتاب
     
-    // 0: Available, 1: Borrowed, 2: ReferenceOnly, 3: Maintenance
-    public int Status { get; set; } 
+    public ItemCopyStatus Status { get; set; } = ItemCopyStatus.Available;
     public string? Notes { get; set; } 
 }
 }

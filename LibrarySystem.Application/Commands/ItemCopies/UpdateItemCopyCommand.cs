@@ -1,14 +1,15 @@
 using AutoMapper;
 using LibrarySystem.Application.Interfaces;
 using LibrarySystem.Domain.Entities;
+using LibrarySystem.Domain.Enums;
 using MediatR;
-using System;
 using System.Threading;
 using System.Threading.Tasks;
 using LibrarySystem.Application.DTOs.ItemCopies;
 
 namespace LibrarySystem.Application.Commands.ItemCopies;
 
+public record UpdateItemCopyCommand(int Id, string Barcode, ItemCopyStatus Status, string? Notes) : IRequest<bool>;
 
 public class UpdateItemCopyHandler : IRequestHandler<UpdateItemCopyCommand, bool>
 {

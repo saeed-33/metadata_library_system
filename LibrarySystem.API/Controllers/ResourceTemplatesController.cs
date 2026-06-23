@@ -10,6 +10,7 @@ namespace LibrarySystem.API.Controllers;
 
 [ApiController]
 [Route("api/resource-templates")]
+
 public class ResourceTemplatesController : ControllerBase
 {
     private readonly IMediator _mediator;
@@ -20,6 +21,8 @@ public class ResourceTemplatesController : ControllerBase
     }
 
     [HttpGet]
+    [AllowAnonymous]
+
     public async Task<IActionResult> GetAll()
     {
         var templates = await _mediator.Send(new GetAllResourceTemplatesQuery());
@@ -36,6 +39,8 @@ public class ResourceTemplatesController : ControllerBase
     }
 
     [HttpGet("{id:int}")]
+    [AllowAnonymous]
+
     public async Task<IActionResult> GetById(int id)
     {
         var template = await _mediator.Send(new GetResourceTemplateByIdQuery(id));

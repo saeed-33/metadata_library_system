@@ -12,6 +12,7 @@ namespace LibrarySystem.API.Controllers;
 
 [ApiController]
 [Route("api/media")]
+
 public class MediaController : ControllerBase
 {
     private readonly IMediator _mediator;
@@ -23,6 +24,8 @@ public class MediaController : ControllerBase
     }
 
     [HttpGet("by-item/{itemId:int}")]
+    [AllowAnonymous]
+
     public async Task<IActionResult> GetByItem(int itemId)
     {
         var mediaList = await _mediator.Send(new GetMediaByItemQuery(itemId));
@@ -30,6 +33,8 @@ public class MediaController : ControllerBase
     }
 
     [HttpGet("{id:int}")]
+    [AllowAnonymous]
+
     public async Task<IActionResult> GetById(int id)
     {
         var media = await _mediator.Send(new GetMediaByIdQuery(id));
@@ -118,6 +123,8 @@ public class MediaController : ControllerBase
     }
     
     [HttpGet]
+    [AllowAnonymous]
+
     public async Task<IActionResult> GetAll()
     {
         var mediaList = await _mediator.Send(new GetAllMediaQuery());
